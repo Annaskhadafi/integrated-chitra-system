@@ -3,7 +3,7 @@
         <div class="navbar nav_title" style="border: 0;">
             <a href="halamanics.php" class="site_title" style="font-size: 16px">
                 <span>
-                    <H2>Itegrated Chitra System</H2>
+                    <H2>Integrated Chitra System</H2>
                 </span>
             </a>
         </div>
