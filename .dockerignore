@@ -1,0 +1,11 @@
+.git
+.gitignore
+.DS_Store
+node_modules
+npm-debug.log
+.vscode
+.bowerrc
+bower.json
+gulpfile.js
+package.json
+package-lock.json
