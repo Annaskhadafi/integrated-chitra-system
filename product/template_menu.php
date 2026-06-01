@@ -54,11 +54,13 @@
                     $username_display = $user['username'] ?? "User";
                     $idsite = $user['id_site'] ?? 0;
                     $site = $user['site'] ?? "";
-                } else {
-                    $level = 0;
-                    $username_display = "Guest";
-                    $idsite = 0;
-                    $site = "";
+                } 
+                else {
+                    Optional: Redirect to login if not logged in
+                    header("Location: login.php");
+                    exit;
+                    $user = null;
+                    $name = "";
                 }
                 ?> <br>
                 <h2> [
