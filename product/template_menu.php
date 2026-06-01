@@ -30,9 +30,9 @@
                         $idstoreloc = isset($user['id_storeloc']) ? $user['id_storeloc'] : 0;
                     }
                 } else {
-                    // Optional: Redirect to login if not logged in
-                    // header("Location: login.php");
-                    // exit;
+                    Optional: Redirect to login if not logged in
+                    header("Location: login.php");
+                    exit;
                     $user = null;
                     $name = "";
                 }
