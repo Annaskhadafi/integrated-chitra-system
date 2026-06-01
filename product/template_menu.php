@@ -1,3 +1,15 @@
+<?php
+ob_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+if (!isset($_SESSION['username'])) {
+    header("Location: login.php");
+    ob_end_flush();
+    exit;
+}
+ob_end_flush();
+?>
 <div class="col-md-3 left_col">
     <div class="left_col scroll-view">
         <div class="navbar nav_title" style="border: 0;">
@@ -30,14 +42,16 @@
                         $idstoreloc = isset($user['id_storeloc']) ? $user['id_storeloc'] : 0;
                     }
                 } else {
-                    Optional: Redirect to login if not logged in
-                    header("Location: login.php");
-                    exit;
+                    // Optional: Redirect to login if not logged in
+                    // header("Location: login.php");
+                    // exit;
                     $user = null;
                     $name = "";
                 }
                 ?>
                 <?php
+                $level = 0;
+                $idsection = 0;
                 if ($user) {
                     $lvl = $user['level'] ?? 0;
                     if ($lvl == 1) {
@@ -56,7 +70,7 @@
                     $site = $user['site'] ?? "";
                 } 
                 else {
-                    Optional: Redirect to login if not logged in
+                    // Optional: Redirect to login if not logged in
                     header("Location: login.php");
                     exit;
                     $user = null;
