@@ -50,8 +50,6 @@ ob_end_flush();
                 }
                 ?>
                 <?php
-                $level = 0;
-                $idsection = 0;
                 if ($user) {
                     $lvl = $user['level'] ?? 0;
                     if ($lvl == 1) {
@@ -64,7 +62,10 @@ ob_end_flush();
                         echo "Super User";
                     }
 
-                    $level = $lvl;
+                    // Pastikan variabel level dan idsection tetap menggunakan nilai yang sudah didapat
+                    $level = $level ?? $lvl; 
+                    $idsection = $idsection ?? 0;
+                    
                     $username_display = $user['username'] ?? "User";
                     $idsite = $user['id_site'] ?? 0;
                     $site = $user['site'] ?? "";
