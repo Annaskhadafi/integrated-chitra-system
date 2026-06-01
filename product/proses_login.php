@@ -1,6 +1,12 @@
 <?php
-// ini_set('session.cookie_domain', '.chitraparatama.co.id');
-ini_set('session.cookie_path', '/');
+// Konfigurasi cookie sesi aman
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',
+    'secure' => true, // Mengingat aplikasi sudah menggunakan HTTPS
+    'httponly' => true, // Mencegah akses cookie via JavaScript
+    'samesite' => 'Strict' // Melindungi dari CSRF
+]);
 session_start();
 include 'koneksi.php';
 
