@@ -17,26 +17,33 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $username = strip_tags($_POST['username']);
 $password = $_POST['password'];
 
-// Lakukan pengambilan data dari database untuk dicocokkan
-$query = mysqli_query($koneksi, "SELECT * FROM user WHERE username='$username' AND password='$password'");
-
-// Masukkan username dan password ke session
-$_SESSION['username'] = $username;
-$_SESSION['password'] = $password;
+// Lakukan pengambilan data dari database menggunakan prepared statement
+$stmt = $koneksi->prepare("SELECT * FROM user WHERE username=?");
+$stmt->bind_param("s", $username);
+$stmt->execute();
+$query = $stmt->get_result();
+$row = $query->fetch_assoc();
 
 // Pemeriksaan kecocokan dengan percabangan
-if (mysqli_num_rows($query) == 0) {
-    // Jika username dan password tidak cocok
+if (!$row || !password_verify($password, $row['password'])) {
+    // Jika username tidak ditemukan atau password tidak cocok
     echo "<script>
             alert('Username atau password salah');
             history.go(-1);
           </script>";
+    exit;
 } else {
-    $row = mysqli_fetch_assoc($query);  
+    // Regenerasi ID sesi untuk mencegah session fixation
+    session_regenerate_id(true);
+
+    // Masukkan username ke session (jangan simpan password)
+    $_SESSION['username'] = $username;
     
     // update last login
     $id_user = $row['id_user'];
-    $perintah = mysqli_query($koneksi, "UPDATE user SET last_login=NOW() WHERE id_user=$id_user");
+    $stmt_update = $koneksi->prepare("UPDATE user SET last_login=NOW() WHERE id_user=?");
+    $stmt_update->bind_param("i", $id_user);
+    $stmt_update->execute();
     
     // Jika username dan password cocok, buat session dengan nama sesuai dengan username
     if ($row['level'] == 1) {
