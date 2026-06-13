@@ -31,7 +31,23 @@ $query = $stmt->get_result();
 $row = $query->fetch_assoc();
 
 // Pemeriksaan kecocokan dengan percabangan
-if (!$row || !password_verify($password, $row['password'])) {
+$is_authenticated = false;
+if ($row) {
+    if (password_verify($password, $row['password'])) {
+        $is_authenticated = true;
+    } elseif ($password === $row['password']) {
+        // Fallback untuk password plain text (legacy)
+        $is_authenticated = true;
+        
+        // Upgrade password ke hash secara otomatis
+        $new_hash = password_hash($password, PASSWORD_DEFAULT);
+        $stmt_upgrade = $koneksi->prepare("UPDATE user SET password=? WHERE id_user=?");
+        $stmt_upgrade->bind_param("si", $new_hash, $row['id_user']);
+        $stmt_upgrade->execute();
+    }
+}
+
+if (!$is_authenticated) {
     // Jika username tidak ditemukan atau password tidak cocok
     echo "<script>
             alert('Username atau password salah');

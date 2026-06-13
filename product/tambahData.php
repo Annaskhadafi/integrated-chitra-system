@@ -20,7 +20,7 @@ if($item=='fleet'){
 elseif ($item=='user') {
     $name     = $_POST['name'];
     $username = $_POST['username'];
-    $password = $_POST['password']; // disimpan apa adanya (plaintext)
+    $password = password_hash($_POST['password'], PASSWORD_DEFAULT); // Hash password sebelum disimpan
     $section  = $_POST['section'];
     $level    = $_POST['level'];
     

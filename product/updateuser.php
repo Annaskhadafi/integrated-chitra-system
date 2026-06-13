@@ -6,7 +6,14 @@ $id_user    = $_POST['id_user'];
 $sn         = mysqli_real_escape_string($koneksi, $_POST['sn']);
 $name       = mysqli_real_escape_string($koneksi, $_POST['name']);
 $username   = mysqli_real_escape_string($koneksi, $_POST['username']);
-$password   = mysqli_real_escape_string($koneksi, $_POST['password']);
+$password_input = $_POST['password'];
+
+// Cek apakah password yang dikirim sudah berupa hash atau masih plain text
+// Jika panjangnya 60 karakter dan diawali $, kemungkinan besar sudah hash (BCRYPT)
+// Namun paling aman adalah selalu menganggap input dari form adalah password baru yang perlu di-hash,
+// KECUALI jika user tidak mengubahnya. Di form modaledituser.php, password ditampilkan.
+$password = password_hash($password_input, PASSWORD_DEFAULT);
+
 $section    = mysqli_real_escape_string($koneksi, $_POST['section']);
 $department = mysqli_real_escape_string($koneksi, $_POST['department']);
 $email      = mysqli_real_escape_string($koneksi, $_POST['email']);
