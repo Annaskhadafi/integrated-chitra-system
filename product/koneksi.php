@@ -27,7 +27,7 @@ try {
     // Variabel $sambung yang sebelumnya error karena tidak terdefinisi di upload_aksi.php
     $sambung = $koneksi;
 } catch (mysqli_sql_exception $e) {
-    // Jika gagal konek, tampilkan pesan yang lebih rapi atau log
+    // Tampilkan pesan error asli dari MySQL
     error_log("Database Connection Error: " . $e->getMessage());
-    die("Maaf, aplikasi tidak dapat terhubung ke database. Silakan cek konfigurasi environment variables di Dokploy." . $e->getMessage());
+    die("Gagal koneksi ke database: " . htmlspecialchars($e->getMessage()));
 }
