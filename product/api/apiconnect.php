@@ -209,7 +209,7 @@ function getDataMaterialPrice($koneksi)
 {
     $sql = "SELECT id, material_name, material_type, material_price, material_unit, material_currency, price_date, source 
             FROM material_price 
-            WHERE material_type = 'Material' 
+            WHERE material_type = 'Material' AND material_type NOT LIKE '%Sulphur%' 
             ORDER BY price_date DESC";
 
     $query = $koneksi->query($sql);
