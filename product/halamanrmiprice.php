@@ -1,4 +1,5 @@
 <?php
+session_start();
 include "koneksi.php";
 
 // --- LOGIKA FILTER TAHUN ---
@@ -169,7 +170,7 @@ $datasetsMaterial = buildDataset($temp_data_material, $labels, $material_info, $
                     <?php $idx++; endforeach; ?>
                 </div>
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <canvas id="mineralChart" style="width:100%; height:350px;"></canvas>
                     </div>
                 </div>
@@ -192,7 +193,7 @@ $datasetsMaterial = buildDataset($temp_data_material, $labels, $material_info, $
                     <?php $idx++; endforeach; ?>
                 </div>
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <canvas id="materialChart" style="width:100%; height:350px;"></canvas>
                     </div>
                 </div>
@@ -234,35 +235,6 @@ $datasetsMaterial = buildDataset($temp_data_material, $labels, $material_info, $
               </div>
           </div>
 
-          <div class="x_panel">
-              <div class="x_title">
-                  <h2>Data Source</h2>
-                  <div class="clearfix"></div>
-              </div>
-              <div class="table-responsive">
-                  <?php
-                  $querySource = "SELECT DISTINCT(material_name) as material, source FROM `material_price` ORDER BY `source` DESC";
-                  $resSource = mysqli_query($koneksi, $querySource);
-                  ?>
-                  <table class="table table-striped table-bordered">
-                    <thead>
-                        <tr style="background:#f5f5f5;">
-                            <th>Material Name</th>
-                            <th>Source</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php while ($rowSrc = mysqli_fetch_assoc($resSource)): ?>
-                            <tr>
-                                <td><?= htmlspecialchars($rowSrc['material']) ?></td>
-                                <td><?= htmlspecialchars($rowSrc['source']) ?></td>
-                            </tr>
-                        <?php endwhile; ?>
-                    </tbody>
-                  </table>
-              </div>
-          </div>
-
         </div>
       </div>
     </div>
@@ -271,14 +243,6 @@ $datasetsMaterial = buildDataset($temp_data_material, $labels, $material_info, $
     <script src="../vendors/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="../vendors/datatables.net/js/jquery.dataTables.min.js"></script>
     <script src="../vendors/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
-    
-    <!-- DataTables Buttons -->
-    <script src="../vendors/datatables.net-buttons/js/dataTables.buttons.min.js"></script>
-    <script src="../vendors/datatables.net-buttons-bs/js/buttons.bootstrap.min.js"></script>
-    <script src="../vendors/datatables.net-buttons/js/buttons.html5.min.js"></script>
-    <script src="../vendors/datatables.net-buttons/js/buttons.print.min.js"></script>
-    <script src="../vendors/jszip/dist/jszip.min.js"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
@@ -328,9 +292,6 @@ $datasetsMaterial = buildDataset($temp_data_material, $labels, $material_info, $
         if ($("#datatable-buttons").length) {
           $("#datatable-buttons").DataTable({
             dom: "Bfrtip",
-            buttons: [
-                { extend: "excelHtml5", text: "Export Excel", className: "btn-sm btn-primary" }
-            ],
             order: [[ 6, "desc" ]]
           });
         }
