@@ -100,6 +100,20 @@ switch ($functionName) {
         $result = getDataInventory($koneksi);
         break;
 
+    case 'get_material_price':
+        if ($method !== 'GET') {
+            sendMethodNotAllowed("GET");
+        }
+        $result = getDataMaterialPrice($koneksi);
+        break;
+
+    case 'get_freight_price':
+        if ($method !== 'GET') {
+            sendMethodNotAllowed("GET");
+        }
+        $result = getDataFreightPrice($koneksi);
+        break;
+
     default:
         http_response_code(400);
         echo json_encode(["status" => "error", "message" => "Function parameter invalid"]);
@@ -186,6 +200,48 @@ function getDataGoodReceive($koneksi, $start_date, $end_date)
         $row['togr']   = (int)$row['togr'];
         $row['toinvo'] = (int)$row['toinvo'];
         $row['grqty']  = (int)$row['grqty'];
+        $data[] = $row;
+    }
+    return $data;
+}
+
+function getDataMaterialPrice($koneksi)
+{
+    $sql = "SELECT id, material_name, material_type, material_price, material_unit, material_currency, price_date, source 
+            FROM material_price 
+            WHERE material_type = 'Material' 
+            ORDER BY price_date DESC";
+
+    $query = $koneksi->query($sql);
+
+    if (!$query) {
+        return ["status" => "ERROR", "reason" => $koneksi->error];
+    }
+
+    $data = [];
+    while ($row = $query->fetch_assoc()) {
+        $row['material_price'] = (float)$row['material_price'];
+        $data[] = $row;
+    }
+    return $data;
+}
+
+function getDataFreightPrice($koneksi)
+{
+    $sql = "SELECT id, material_name, material_type, material_price, material_unit, material_currency, price_date, source 
+            FROM material_price 
+            WHERE material_type = 'freight' 
+            ORDER BY price_date DESC";
+
+    $query = $koneksi->query($sql);
+
+    if (!$query) {
+        return ["status" => "ERROR", "reason" => $koneksi->error];
+    }
+
+    $data = [];
+    while ($row = $query->fetch_assoc()) {
+        $row['material_price'] = (float)$row['material_price'];
         $data[] = $row;
     }
     return $data;
