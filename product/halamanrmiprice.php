@@ -1,6 +1,6 @@
 <?php
+session_start();
 include "koneksi.php";
-include "template_menu.php";
 
 // --- LOGIKA FILTER TAHUN ---
 // 1. Ambil daftar tahun unik dari database untuk dropdown
@@ -166,6 +166,7 @@ $datasetsMaterial = buildDataset($temp_data_material, $labels, $material_info, $
 <body class="nav-md">
     <div class="container body">
         <div class="main_container">
+            <?php include "template_menu.php"; ?>
 
             <div class="right_col" role="main">
 
