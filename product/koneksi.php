@@ -5,6 +5,8 @@ $db_host = getenv('DB_HOST') ?: 'integrated-chitra-system-database-x77gvi';
 $db_user = getenv('DB_USER') ?: 'root';
 $db_pass = getenv('DB_PASS') ?: 'userdatabaseics27693';
 
+
+
 $db_name  = getenv('DB_NAME') ?: "chitraparatama_ics";
 $db_name2 = getenv('DB_NAME2') ?: "chitraparatama_fleetlist";
 $db_name3 = getenv('DB_NAME3') ?: "chitraparatama_repair_job_card";
