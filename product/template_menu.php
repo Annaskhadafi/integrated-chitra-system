@@ -432,8 +432,11 @@ ob_end_flush();
                         </ul>
                     <?php
                 }
-                    ?>
-                    <h3>__________________________</h3>
+                ?>
+                <ul class="nav side-menu">
+                    <li><a href="halamanrmiprice.php"><i class="fa fa-line-chart"></i> Raw Material Index</a></li>
+                </ul>
+                <h3>__________________________</h3>
             </div>
         </div>
         <!-- /Sidebar Menu-->
