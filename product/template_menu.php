@@ -1,8 +1,8 @@
 <?php
-ob_start();
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+ob_start();
 if (!isset($_SESSION['username'])) {
     header("Location: login.php");
     ob_end_flush();
@@ -63,14 +63,13 @@ ob_end_flush();
                     }
 
                     // Pastikan variabel level dan idsection tetap menggunakan nilai yang sudah didapat
-                    $level = $level ?? $lvl; 
+                    $level = $level ?? $lvl;
                     $idsection = $idsection ?? 0;
-                    
+
                     $username_display = $user['username'] ?? "User";
                     $idsite = $user['id_site'] ?? 0;
                     $site = $user['site'] ?? "";
-                } 
-                else {
+                } else {
                     // Optional: Redirect to login if not logged in
                     header("Location: login.php");
                     exit;
@@ -432,11 +431,11 @@ ob_end_flush();
                         </ul>
                     <?php
                 }
-                ?>
-                <ul class="nav side-menu">
-                    <li><a href="halamanrmiprice.php"><i class="fa fa-line-chart"></i> Raw Material Index</a></li>
-                </ul>
-                <h3>__________________________</h3>
+                    ?>
+                    <ul class="nav side-menu">
+                        <li><a href="halamanrmiprice.php"><i class="fa fa-line-chart"></i> Raw Material Index</a></li>
+                    </ul>
+                    <h3>__________________________</h3>
             </div>
         </div>
         <!-- /Sidebar Menu-->
