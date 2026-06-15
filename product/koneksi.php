@@ -31,5 +31,5 @@ try {
 } catch (mysqli_sql_exception $e) {
     // Jika gagal konek, tampilkan pesan yang lebih rapi atau log
     error_log("Database Connection Error: " . $e->getMessage());
-    die("Maaf, aplikasi tidak dapat terhubung ke database. Silakan cek konfigurasi environment variables di Dokploy.");
+    die("Maaf, aplikasi tidak dapat terhubung ke database. Silakan cek konfigurasi environment variables di Dokploy." . $e->getMessage());
 }
