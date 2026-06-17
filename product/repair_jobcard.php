@@ -120,10 +120,15 @@
                       <div class="row">
                         <div class="  table">
                             <?php
-                                $perintah = mysqli_query($koneksi3, "SELECT DISTINCT proseske FROM job WHERE wo='$idwo'");
-                                while($data = mysqli_fetch_array($perintah)){?>
+                                $perintah1 = mysqli_query($koneksi3, "SELECT DISTINCT proseske FROM job WHERE wo='$idwo' ORDER BY proseske ASC");
+                                while($data1 = mysqli_fetch_array($perintah1)){
+                                    $proseske_val = $data1['proseske'];
+                                ?>
                                   <table class="table table-striped">
                                     <thead>
+                                      <tr>
+                                        <th colspan="7" style="background: #eee;">Process #<?php echo $proseske_val; ?></th>
+                                      </tr>
                                       <tr>
                                         <th>Injuries</th>
                                         <th>Date</th>
@@ -138,8 +143,8 @@
                                         <?php
                                             $material = array();
                                             $satuan = array();
-                                            $jmlh=array();
-                                            $perintah = mysqli_query($koneksi3, "SELECT 
+                                            $jmlh = array();
+                                            $perintah2 = mysqli_query($koneksi3, "SELECT 
                                                                                   a.wo, 
                                                                                   a.job,
                                                                                   b.material_name,
@@ -153,41 +158,46 @@
                                                                                   CONCAT(a.wo, a.job, a.proseske) AS kunci 
                                                                                 FROM job a
                                                                                 LEFT JOIN material_stock b ON a.material = b.id_matstock
-                                                                                WHERE a.wo = '$idwo'");
-                                            while ($data = mysqli_fetch_array($perintah)) {
-                                                $kunci = $data['kunci'];
-                                                $nama = $data['material_name'];
-                                                $smu = $data['smu'];
-                                                $jmlh[$kunci] += $data['qty'];
+                                                                                WHERE a.wo = '$idwo' AND a.proseske = '$proseske_val'");
+                                            while ($data2 = mysqli_fetch_array($perintah2)) {
+                                                $kunci = $data2['kunci'];
+                                                $nama = $data2['material_name'];
+                                                $smu = $data2['smu'];
+                                                
+                                                if (!isset($jmlh[$kunci])) {
+                                                    $jmlh[$kunci] = 0;
+                                                }
+                                                $jmlh[$kunci] += $data2['qty'];
+                                                
                                                 if (!isset($material[$kunci])) {
-                                                    $material[$kunci] = $nama;
-                                                    $satuan[$kunci] = $smu;
-                                                } else {
-                                                    $material[$kunci] .= ", " . $nama;
-                                                    $satuan[$kunci] = ", " . $smu;
+                                                    $material[$kunci] = $nama ?? '';
+                                                    $satuan[$kunci] = $smu ?? '';
+                                                } else if ($nama) {
+                                                    $material[$kunci] .= ($material[$kunci] ? ", " : "") . $nama;
+                                                    // Typically keep the first unit or list them
                                                 }
                                             }
                                             
                                             $total_time = 0;                                            
-                                            $perintah = mysqli_query($koneksi3, "SELECT DISTINCT wo, job, date(date) as date, time, person, note, proseske,
+                                            $perintah3 = mysqli_query($koneksi3, "SELECT DISTINCT wo, job, date(date) as date, time, person, note, proseske,
                                                                                   CONCAT(wo, job, proseske) AS kunci  
                                                                                   FROM job 
-                                                                                  WHERE wo='$idwo';");
-                                            while($data = mysqli_fetch_array($perintah)){
-                                            $job=$data['job'];
-                                            $time=$data['time'];
-                                            $total_time += $time;
-                                            ?>
+                                                                                  WHERE wo='$idwo' AND proseske = '$proseske_val'");
+                                            while($data3 = mysqli_fetch_array($perintah3)){
+                                                $job = $data3['job'];
+                                                $time = $data3['time'];
+                                                $kunci = $data3['kunci'];
+                                                $total_time += $time;
+                                                ?>
                                                 <tr>
-                                                    <td><?php if($job=='Dimensi Luka'){ echo $data['note'];} elseif($job=='Skiving') {echo $remark;}?></td>
-                                                    <td><?php echo $data['date']; ?></td>
+                                                    <td><?php if($job=='Dimensi Luka'){ echo $data3['note'];} elseif($job=='Skiving') {echo $remark;}?></td>
+                                                    <td><?php echo $data3['date']; ?></td>
                                                     <td><?php if ($time==0){echo "<s>".$job."</s>";} else{echo $job;} ?></td>
-                                                    <td><?php echo $material[$data['kunci']]; ?></td>
-                                                    <td><?php echo $jmlh[$data['kunci']]." ".$satuan[$data['kunci']]; ?> </td>
-                                                    <td><?php echo $data['time']; ?></td>
-                                                    <td><?php echo $data['person']; ?></td>
+                                                    <td><?php echo $material[$kunci] ?? '-'; ?></td>
+                                                    <td><?php echo ($jmlh[$kunci] ?? 0) . " " . ($satuan[$kunci] ?? ""); ?> </td>
+                                                    <td><?php echo $data3['time']; ?></td>
+                                                    <td><?php echo $data3['person']; ?></td>
                                                 </tr>  
-                                            
                                             <?php    
                                             }
                                         ?>

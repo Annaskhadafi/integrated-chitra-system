@@ -12,25 +12,24 @@ td {
 </style>
 <?php 
     include "koneksi.php"; 
-    $picgi = $_POST['picgi'];
-    $pn = $_POST['pn'];
-    $date = $_POST['date'];
-    $qty = $_POST['qty'];
-    $storeloc = $_POST['storeloc'];
-    $mrko = $_POST['mrko'];
+    $picgi = $_POST['picgi'] ?? '';
+    $pn = $_POST['pn'] ?? '';
+    $date = $_POST['date'] ?? '';
+    $qty = (int)($_POST['qty'] ?? 0);
+    $storeloc = $_POST['storeloc'] ?? '';
+    $mrko = $_POST['mrko'] ?? '';
     
     $perintah = mysqli_query($koneksi6,"SELECT count(*) as onhand
                                         FROM stock a,part_number b,storeloc c
-                                        WHERE a.id_part_number=b.id_part_number AND a.id_storeloc=c.id_storeloc AND b.id_part_number=$pn AND c.id_storeloc=$storeloc AND wo IS NULL AND gi IS NULL;
-                                        ");
+                                        WHERE a.id_part_number=b.id_part_number AND a.id_storeloc=c.id_storeloc AND b.id_part_number='$pn' AND c.id_storeloc='$storeloc' AND wo IS NULL AND gi IS NULL");
     $data = mysqli_fetch_array($perintah);
-    $onhand=$data['onhand'];
+    $onhand = $data['onhand'] ?? 0;
     // jika wo lebih kecil dari stock onhand, tampilkan list
-    if ($qty<=$onhand){
+    if ($qty <= $onhand){
         ?>
         <form id="formData" action="vhs_updatestock.php" method="post">
-            <input type="hidden" name="picgi" value=<?php echo $picgi;?>>
-            <input type="hidden" name="date" value="<?php echo $date;?>">
+            <input type="hidden" name="picgi" value="<?php echo htmlspecialchars($picgi);?>">
+            <input type="hidden" name="date" value="<?php echo htmlspecialchars($date);?>">
             <table style="width:100%">
                 <tr>
                 <th>No</th>
@@ -51,16 +50,11 @@ td {
                 <th style="width:10%">MRKO</th>
             </tr>
                 <?php
-                // echo $pn."<br>";
-                // echo $date."<br>";
-                // echo $qty."<br>";
-                // echo $storeloc."<br>";
                 $no=1;
                 $perintah = mysqli_query($koneksi6,"SELECT * 
                                                     FROM stock a,part_number b,storeloc c
-                                                    WHERE a.id_part_number=b.id_part_number AND a.id_storeloc=c.id_storeloc AND b.id_part_number=$pn AND c.id_storeloc=$storeloc AND wo IS NULL AND gi IS NULL
-                                                    LIMIT $qty;
-                                                    ");
+                                                    WHERE a.id_part_number=b.id_part_number AND a.id_storeloc=c.id_storeloc AND b.id_part_number='$pn' AND c.id_storeloc='$storeloc' AND wo IS NULL AND gi IS NULL
+                                                    LIMIT $qty");
                 while ($data = mysqli_fetch_array($perintah)) {?>
                     <tr>
                         <td><?php echo $no;?>.</td>

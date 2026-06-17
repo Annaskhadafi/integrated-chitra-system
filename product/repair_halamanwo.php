@@ -73,7 +73,7 @@
                             
                             $perintah = mysqli_query($koneksi3, "SELECT wo,job,date
                                                                 FROM job
-                                                                WHERE  job='painting' ");
+                                                                WHERE job='Painting' OR job='painting' ");
                             $finish = array();
                             while ($data = mysqli_fetch_array($perintah)) {
                                 $finish[$data['wo']]=$data['date'];
@@ -95,20 +95,56 @@
                                 ");
                             }
                             $no=1;
+                            $modals = "";
                         
                             while ($data = mysqli_fetch_array($perintah)) { 
                               $bast=$data['bast'];
                               $status=$data['status'];
                               $jobtype=$data['job_type'];
                               $tiretype=$data['type'];
+                              $id_wo = $data['id_wo'];
                               
-                              // $repair_type = $data['repair_type'];
+                              // Collect modals
+                              $modals .= '
+                            <div class="modal fade" id="editModal'.$id_wo.'" tabindex="-1" role="dialog" aria-labelledby="editModalLabel'.$id_wo.'" aria-hidden="true">
+                              <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                  <form action="repair_updatewo.php" method="POST">
+                                    <div class="modal-body">
+                                      <input type="hidden" name="idwo" value="'.$id_wo.'">
+                                      <input type="hidden" name="status" value="'.$status.'">
+                                      <div class="form-group">
+                                        <label for="wo">Work Order</label>
+                                        <input type="text" class="form-control" name="wo" value="'.$data['wo'].'" required>
+                                      </div>
+                                      <div class="form-group">
+                                        <label for="wo_date">Date</label>
+                                        <input type="date" class="form-control" name="date" value="'.$data['wo_date'].'" required>
+                                      </div>
+                                      <div class="form-group">
+                                        <label for="inv">Invoice</label>
+                                        <input type="text" class="form-control" name="inv" value="'.$data['invoice'].'">
+                                      </div>  
+                                      <div class="form-group">
+                                        <label for="invdate">Invoice Date</label>
+                                        <input type="date" class="form-control" name="invdate" value="'.$data['invoice_date'].'">
+                                      </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                      <button type="submit" class="btn btn-success">Simpan</button>
+                                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                                    </div>
+                                  </form>
+                                </div>
+                              </div>
+                            </div>';
+
                               if($status=='w/ work_order'){?>
                                 <tr>
                                     <?php if($level==1){?>
                                     <form method="POST" action="repair_updatewo.php"> 
                                     <?php } ?>
-                                        <td><?php echo $no++; ?></td>
+                                        <td><?php echo $no; ?></td>
                                         <td><input type="text" name="wo" value="<?php echo $data['wo']; ?>" required></td>
                                         <td><?php echo $data['size']; ?></td>
                                         <td><?php echo $data['tire_sn']; ?></td>
@@ -120,7 +156,7 @@
                                         <td><?php echo $data['received_date']; ?></td>
                                         <td><?php echo $data['inspect_date']; ?></td>
                                         <td> <input type="date" name="date" value="<?php echo $data['wo_date']; ?>" max="<?php echo date('Y-m-d'); ?>" required></td>
-                                        <td><?php echo $finish[$data['id_wo']]; ?></td>
+                                        <td><?php echo $finish[$data['id_wo']] ?? '-'; ?></td>
                                         <td></td>
                                         <td></td>
                                         <td><?php echo $data['store_loc']; ?></td>
@@ -137,7 +173,7 @@
                               }
                               elseif ($status=='Complete'){?>  
                                 <tr>
-                                        <td><?php echo $no++; ?></td>
+                                        <td><?php echo $no; ?></td>
                                         <td>
                                             <?php echo $data['wo'];?>
                                         </td>
@@ -151,7 +187,7 @@
                                         <td><?php echo $data['received_date']; ?></td>
                                         <td><?php echo $data['inspect_date']; ?></td>
                                         <td><?php echo $data['wo_date']; ?></td>
-                                        <td><?php echo $finish[$data['id_wo']]; ?></td>
+                                        <td><?php echo $finish[$data['id_wo']] ?? '-'; ?></td>
                                         <td><?php echo $data['invoice']; ?></td>
                                         <td><?php echo $data['invoice_date']; ?></td>
                                         <td><?php echo $data['store_loc']; ?></td>
@@ -172,7 +208,7 @@
                               }
                               elseif ($status=='Progress'){?>  
                                 <tr>
-                                        <td><?php echo $no++; ?></td>
+                                        <td><?php echo $no; ?></td>
                                         <td>
                                             <?php echo $data['wo']; ?>
                                             <button type="button"
@@ -193,7 +229,7 @@
                                         <td><?php echo $data['received_date']; ?></td>
                                         <td><?php echo $data['inspect_date']; ?></td>
                                         <td><?php echo $data['wo_date']; ?></td>
-                                        <td><?php echo $finish[$data['id_wo']]; ?></td>
+                                        <td><?php echo $finish[$data['id_wo']] ?? '-'; ?></td>
                                         <td><?php echo $data['invoice']; ?></td>
                                         <td><?php echo $data['invoice_date']; ?></td>
                                         <td><?php echo $data['store_loc']; ?></td>
@@ -206,7 +242,7 @@
                               }
                               else{?>  
                                 <tr>
-                                        <td><?php echo $no++; ?></td>
+                                        <td><?php echo $no; ?></td>
                                         <td><?php echo $data['wo']; ?></td>
                                         <td><?php echo $data['size']; ?></td>
                                         <td><?php echo $data['tire_sn']; ?></td>
@@ -218,7 +254,7 @@
                                         <td><?php echo $data['received_date']; ?></td>
                                         <td><?php echo $data['inspect_date']; ?></td>
                                         <td><?php echo $data['wo_date']; ?></td>
-                                        <td><?php echo $finish[$data['id_wo']]; ?></td>
+                                        <td><?php echo $finish[$data['id_wo']] ?? '-'; ?></td>
                                         <td></td>
                                         <td></td>
                                         <td><?php echo $data['store_loc']; ?></td>
@@ -229,52 +265,11 @@
                                 </tr>
                                 <?php 
                                 }
-                              $no++; ?>
-                            <div class="modal fade" id="editModal<?php echo $data['id_wo']; ?>" tabindex="-1" role="dialog" aria-labelledby="editModalLabel<?php echo $data['id_wo']; ?>" aria-hidden="true">
-                              <div class="modal-dialog" role="document">
-                                <div class="modal-content">
-                            
-                                  <form action="repair_updatewo.php" method="POST">
-                                    <div class="modal-body">
-                                      <input type="hidden" name="idwo" value="<?php echo $data['id_wo']; ?>">
-                                      <input type="hidden" name="status" value="<?php echo $data['status']; ?>">
-                            
-                                      <div class="form-group">
-                                        <label for="wo">Work Order</label>
-                                        <input type="text" class="form-control" name="wo" value="<?php echo $data['wo']; ?>" required>
-                                      </div>
-                            
-                                      <div class="form-group">
-                                        <label for="wo_date">Date</label>
-                                        <input type="date" class="form-control" name="date" value="<?php echo $data['wo_date']; ?>" required>
-                                      </div>
-                                      
-                                      <div class="form-group">
-                                        <label for="wo_date">Invoice</label>
-                                        <input type="text" class="form-control" name="inv" value="<?php echo $data['invoice']; ?>">
-                                      </div>  
-                                      
-                                      <div class="form-group">
-                                        <label for="wo_date">Invoice Date</label>
-                                        <input type="date" class="form-control" name="invdate" value="<?php echo $data['invoice_date']; ?>">
-                                      </div>
-                                      
-                                    </div>
-                            
-                                    <div class="modal-footer">
-                                      <button type="submit" class="btn btn-success">Simpan</button>
-                                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                                    </div>
-                                  </form>
-                            
-                                </div>
-                              </div>
-                            </div>
-                              <?php
+                              $no++; 
                             } ?>
                         </tbody>
-                                                
-                                            </table>  
+                        </table>
+                        <?php echo $modals; ?>  
                                         </div>
                                     </div>
                                 </div> 

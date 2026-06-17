@@ -1,30 +1,40 @@
 <?php
-$idunitsite= $_POST['idunitsite'];
-$unitnumber= $_POST['unitnumber'];
-$unit= $_POST['unit'];
-$hm= $_POST['hm'];
+$idunitsite = $_POST['idunitsite'] ?? '';
+$unitnumber = $_POST['unitnumber'] ?? '';
+$unit = $_POST['unit'] ?? '';
+$hm = (float)($_POST['hm'] ?? 0);
 include "koneksi.php";
-$cekdulu= mysqli_query ($sambung, "SELECT * from unit_site a,unit b where a.unit=b.id_unit and a.id_unit_site='$idunitsite'"); 
+
+$cekdulu = mysqli_query($sambung, "SELECT * FROM unit_site a, unit b WHERE a.unit=b.id_unit AND a.id_unit_site='$idunitsite'"); 
 $cek = mysqli_fetch_array($cekdulu);
-$tire = $cek['tire'];
-$life=$hm-$cek['hm'];
-$no=1;
+$tire = $cek['tire'] ?? 0;
+$prev_hm = $cek['hm'] ?? 0;
+$life = $hm - $prev_hm;
 $noa=1;
+
 //tambahkan lifetime baru pada tire
-while($noa<=$tire){ 
-                $perintah2=mysqli_query ($sambung, "SELECT * from tire_movement a, tire_inventory b where unit_number='$idunitsite' and posisi=$noa and a.sn=b.id_inventory order by id_movement desc limit 1");
-                $data2=mysqli_fetch_array($perintah2);
-                $lifetotal=$life+$data2['lifetime'];
-                $idinventory=$data2['id_inventory'];
-                $rim1 = mysqli_query($sambung, "SELECT * from assembly a,rim_inventory b where a.id_rim_inventory=b.id_rim_inventory and a.id_inventory=$idinventory order by id_assembly desc limit 1"); 
-                $datarim1=mysqli_fetch_array($rim1);
-                $idrim=$datarim1['id_rim_inventory'];
-                $lifetotalrim=$life+$datarim1['rim_lifetime'];
-                $total1 = mysqli_query($sambung, "UPDATE tire_inventory set lifetime = $lifetotal where id_inventory=$idinventory"); 
-                $total2 = mysqli_query($sambung, "UPDATE rim_inventory set rim_lifetime = $lifetotalrim where id_rim_inventory=$idrim");        
-                $noa++;
-            }
+while($noa <= $tire){ 
+    $perintah2 = mysqli_query($sambung, "SELECT * FROM tire_movement a, tire_inventory b WHERE unit_number='$idunitsite' AND posisi='$noa' AND a.sn=b.id_inventory ORDER BY id_movement DESC LIMIT 1");
+    $data2 = mysqli_fetch_array($perintah2);
+    if ($data2) {
+        $prev_lifetime = $data2['lifetime'] ?? 0;
+        $lifetotal = $life + $prev_lifetime;
+        $idinventory = $data2['id_inventory'] ?? '';
+        
+        $rim1 = mysqli_query($sambung, "SELECT * FROM assembly a, rim_inventory b WHERE a.id_rim_inventory=b.id_rim_inventory AND a.id_inventory='$idinventory' ORDER BY id_assembly DESC LIMIT 1"); 
+        $datarim1 = mysqli_fetch_array($rim1);
+        if ($datarim1) {
+            $idrim = $datarim1['id_rim_inventory'] ?? '';
+            $prev_rim_lifetime = $datarim1['rim_lifetime'] ?? 0;
+            $lifetotalrim = $life + $prev_rim_lifetime;
+            mysqli_query($sambung, "UPDATE rim_inventory SET rim_lifetime = '$lifetotalrim' WHERE id_rim_inventory='$idrim'");
+        }
+        
+        mysqli_query($sambung, "UPDATE tire_inventory SET lifetime = '$lifetotal' WHERE id_inventory='$idinventory'");
+    }
+    $noa++;
+}
 //tambahkan HM unit
-$perintah7 = mysqli_query($sambung, "UPDATE unit_site set unit_number='$unitnumber',unit= '$unit',hm='$hm' where id_unit_site=$idunitsite");
-echo"<script> history.go(-1); </script>";
+mysqli_query($sambung, "UPDATE unit_site SET unit_number='$unitnumber', unit='$unit', hm='$hm' WHERE id_unit_site='$idunitsite'");
+echo "<script> history.go(-1); </script>";
 ?>

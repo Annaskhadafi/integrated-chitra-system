@@ -1,21 +1,15 @@
 <?php
 include "koneksi.php";
-$date  = $_POST['date'];
-$invoice  = $_POST['invoice'];
-list($mrko, $id_storeloc) = explode('|', $_POST['mrko']);
+$date  = $_POST['date'] ?? '';
+$invoice  = $_POST['invoice'] ?? '';
+$mrko_raw = $_POST['mrko'] ?? '';
+$mrko_parts = explode('|', (string)$mrko_raw);
+$mrko = $mrko_parts[0] ?? '';
+$id_storeloc = $mrko_parts[1] ?? '';
 
-// echo "Tanggal: " . $date . "<br>";
-// echo "Invoice: " . $invoice . "<br>";
-// echo "MRKO: " . $mrko . "<br>";
-// echo "ID Storeloc: " . $id_storeloc . "<br>";
-        
 $query = mysqli_query($koneksi6, "UPDATE stock 
     SET invoice='$invoice'
-    WHERE mrko='$mrko' and id_storeloc='$id_storeloc';");
-    
-    // echo "UPDATE stock 
-    // SET invoice='$invoice'
-    // WHERE mrko='$mrko' and id_storeloc='$id_storeloc';"
+    WHERE mrko='$mrko' AND id_storeloc='$id_storeloc'");
     
 echo "<script>alert('Data updated!'); window.location.href='vhs_halamanstockvhs.php';</script>";
 ?>
