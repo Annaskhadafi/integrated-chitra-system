@@ -17,17 +17,22 @@ function new_tire_repair(){
         if($api_key == $api_key_value){
             $json_data = file_get_contents("php://input");
             $data = json_decode($json_data, true);
+
+            if (!$data) {
+                echo json_encode(["status" => "error", "message" => "Invalid JSON data"]);
+                return;
+            }
             
-            $id = $data['id']; 
-            $customer = $data['customer']; 
-            $site = $data['site']; 
-            $size = $data['tire_size']; 
-            $sn = $data['sn']; 
-            $brand = $data['brand']; 
-            $type = $data['type_construction']; 
-            $pattern = $data['pattern']; 
-            $received = $data['date_received']; 
-            $receiver = $data['receiver']; 
+            $id = $data['id'] ?? ''; 
+            $customer = $data['customer'] ?? ''; 
+            $site = $data['site'] ?? ''; 
+            $size = $data['tire_size'] ?? ''; 
+            $sn = $data['sn'] ?? ''; 
+            $brand = $data['brand'] ?? ''; 
+            $type = $data['type_construction'] ?? ''; 
+            $pattern = $data['pattern'] ?? ''; 
+            $received = $data['date_received'] ?? ''; 
+            $receiver = $data['receiver'] ?? ''; 
             $status = 'w/ inspect'; 
                 
             $query = mysqli_query($koneksi3,"INSERT INTO work_order(id_wo,status,customer,site,size,tire_sn,brand,pattern,type,received_date,receiver) 
@@ -54,14 +59,19 @@ function inspect(){
         if($api_key == $api_key_value){
             $json_data = file_get_contents("php://input");
             $data = json_decode($json_data, true);
+
+            if (!$data) {
+                echo json_encode(["status" => "error", "message" => "Invalid JSON data"]);
+                return;
+            }
             
-            $idwo=$data['id'];
-            $date = $data['date_inspect']; 
-            $jobtype = $data['status']; 
-            $injury= $data['repair_duration'];
-            $storeloc=$data['repair_location'];
-            $remark = $data['remarks'];
-            $inspector=$data['report_by'];
+            $idwo=$data['id'] ?? '';
+            $date = $data['date_inspect'] ?? ''; 
+            $jobtype = $data['status'] ?? ''; 
+            $injury= $data['repair_duration'] ?? '';
+            $storeloc=$data['repair_location'] ?? '';
+            $remark = $data['remarks'] ?? '';
+            $inspector=$data['report_by'] ?? '';
             
             if($jobtype=="REJECT"){
                 $status="Reject";
@@ -94,6 +104,11 @@ function new_job() {
             $json_data = file_get_contents("php://input");
             $job = json_decode($json_data, true);
 
+            if (!$job) {
+                echo json_encode(["status" => "error", "message" => "Invalid JSON data"]);
+                return;
+            }
+
             $bywhom = $job['bywhom'] ?? '';
             $date = $job['date'] ?? '';
             $fulldate = $job['fulldate'] ?? '';
@@ -107,24 +122,15 @@ function new_job() {
             $dimensi = $job['dimensi'] ?? '';
             $repair_count = $job['process_repair_count'] ?? '';
                 
-            if ($name=='Painting'){
-                $query = mysqli_query($koneksi3,"UPDATE work_order SET remark='$remarks',status='Complete' WHERE id_wo like '$id_wo';");
+            $status_sql = ($name == 'Painting') ? ", status='Complete'" : "";
+            mysqli_query($koneksi3, "UPDATE work_order SET remark='$remarks' $status_sql WHERE id_wo = '$id_wo'");
+
+            if (isset($job['material']) && is_array($job['material'])) {
                 foreach ($job['material'] as $mat) {
                     $id_matstock = isset($mat['id_matstock']) && $mat['id_matstock'] !== '' ? $mat['id_matstock'] : 'NULL';
                     $qty = isset($mat['qty']) && $mat['qty'] !== '' ? $mat['qty'] : 'NULL';
-                    $query = mysqli_query($koneksi3,"INSERT INTO job(wo, job, material, qty, date, time, person, note,proseske) 
-                      VALUES ('$id_wo', '$name', $id_matstock, $qty, '$fulldate', '$total_minutes', '$bywhom', '$dimensi', '$repair_count');
-                    ");
-                }
-            }
-            else{
-                $query = mysqli_query($koneksi3,"UPDATE work_order SET remark='$remarks' WHERE id_wo like '$id_wo';");
-                foreach ($job['material'] as $mat) {
-                    $id_matstock = isset($mat['id_matstock']) && $mat['id_matstock'] !== '' ? $mat['id_matstock'] : 'NULL';
-                    $qty = isset($mat['qty']) && $mat['qty'] !== '' ? $mat['qty'] : 'NULL';
-                    $query = mysqli_query($koneksi3,"INSERT INTO job(wo, job, material, qty, date, time, person, note,proseske) 
-                      VALUES ('$id_wo', '$name', $id_matstock, $qty, '$fulldate', '$total_minutes', '$bywhom', '$dimensi', '$repair_count');
-                    ");
+                    mysqli_query($koneksi3, "INSERT INTO job(wo, job, material, qty, date, time, person, note, proseske) 
+                        VALUES ('$id_wo', '$name', $id_matstock, $qty, '$fulldate', '$total_minutes', '$bywhom', '$dimensi', '$repair_count')");
                 }
             }
             
@@ -148,6 +154,11 @@ function update_job() {
             $json_data = file_get_contents("php://input");
             $job = json_decode($json_data, true);
 
+            if (!$job) {
+                echo json_encode(["status" => "error", "message" => "Invalid JSON data"]);
+                return;
+            }
+
             $id_wo = $job['id_wo'] ?? '';
             $name = $job['name'] ?? ''; 
 
@@ -170,12 +181,14 @@ function update_job() {
 
             mysqli_query($koneksi3, "DELETE FROM job WHERE wo = '$id_wo' AND job = '$name'");
 
-            foreach ($job['material'] as $mat) {
-                $id_matstock = (isset($mat['id_matstock']) && $mat['id_matstock'] !== '') ? $mat['id_matstock'] : 'NULL';
-                $qty = (isset($mat['qty']) && $mat['qty'] !== '') ? $mat['qty'] : 'NULL';
+            if (isset($job['material']) && is_array($job['material'])) {
+                foreach ($job['material'] as $mat) {
+                    $id_matstock = (isset($mat['id_matstock']) && $mat['id_matstock'] !== '') ? $mat['id_matstock'] : 'NULL';
+                    $qty = (isset($mat['qty']) && $mat['qty'] !== '') ? $mat['qty'] : 'NULL';
 
-                $query = mysqli_query($koneksi3, "INSERT INTO job(wo, job, material, qty, date, time, person, note, proseske) 
-                                                  VALUES ('$id_wo', '$name', $id_matstock, $qty, '$fulldate', '$total_minutes', '$bywhom', '$dimensi', '$repair_count')");
+                    $query = mysqli_query($koneksi3, "INSERT INTO job(wo, job, material, qty, date, time, person, note, proseske) 
+                                                      VALUES ('$id_wo', '$name', $id_matstock, $qty, '$fulldate', '$total_minutes', '$bywhom', '$dimensi', '$repair_count')");
+                }
             }
 
             echo json_encode(["status" => "success", "message" => "Data updated (replaced) successfully"]);
