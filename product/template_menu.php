@@ -2,13 +2,14 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-ob_start();
 if (!isset($_SESSION['username'])) {
-    header("Location: login.php");
-    ob_end_flush();
+    if (headers_sent()) {
+        echo "<script>window.location.href='login.php';</script>";
+    } else {
+        header("Location: login.php");
+    }
     exit;
 }
-ob_end_flush();
 ?>
 <div class="col-md-3 left_col">
     <div class="left_col scroll-view">
