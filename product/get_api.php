@@ -58,7 +58,7 @@ function fleetlist()
    {
       global $koneksi2;    
       $query = $koneksi2->query("
-                                SELECT id_fleet_list,d.customer,c.site,c.status,c.location,c.kabupaten,c.kecamatan,unit_manufacture,model,tire_size,tire_quantity,unit_qty,(a.unit_qty*b.tire_quantity) as totaltire, round(((a.rotasi/a.scrap)*b.tire_quantity),0) as annual,(round(((a.rotasi/a.scrap)*b.tire_quantity),0)*a.unit_qty) as forecast
+                                SELECT id_fleet_list,d.customer,c.site,c.status,c.location,c.kabupaten,c.kecamatan,unit_manufacture,model,tire_size,tire_quantity,unit_qty,(a.unit_qty*b.tire_quantity) as totaltire, round(((a.rotasi/a.scrap)*b.tire_quantity),0) as annual,(round(((a.rotasi/a.scrap)*b.tire_quantity),0)*a.unit_qty) as forecast,a.date as lastupdate
                                 FROM fleet_list a,unit_master b,site_master c,customer_master d 
                                 WHERE a.id_site=c.id_site_master and c.id_customer=d.id_customer_master and a.id_unit=b.id_unit_master
                                 ");            
