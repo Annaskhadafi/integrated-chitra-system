@@ -3,3 +3,4 @@ npm-debug.log
 node_modules
 .sass-cache
 koneksi.php
+product/koneksi.php
