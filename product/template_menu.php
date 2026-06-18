@@ -199,7 +199,7 @@ if (!isset($_SESSION['username'])) {
                                         </li>
                                     </ul>
                                 </li>
-                                <li><a href="https://workshop.chitraparatama.co.id/">Tire Repair Scheduling</a></li>
+                                <li><a href="https://workshop.chitraparatama.com/">Tire Repair Scheduling</a></li>
                             </ul>
                         <?php
                     } elseif ($idsection == 4) { ?>
