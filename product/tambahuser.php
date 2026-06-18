@@ -1,5 +1,8 @@
 <?php
 include "koneksi.php"; 
+include "auth_check.php";
+require_super_admin($koneksi);
+
 	$nama = $_POST['nama'];
 	$sn = $_POST['sn'];
 	$password = password_hash($_POST['password'], PASSWORD_DEFAULT);

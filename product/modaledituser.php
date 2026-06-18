@@ -1,5 +1,7 @@
 <?php 
 include "koneksi.php";
+include "auth_check.php";
+require_super_admin($koneksi);
 
 // Amankan input
 $iduser = isset($_POST['iduser']) ? intval($_POST['iduser']) : 0;

@@ -1,5 +1,7 @@
 <?php
 include "koneksi.php";
+include "auth_check.php";
+
 $item = $_POST['item'];
 if($item=='fleet'){
 	$idsite = $_POST['customer'];
@@ -18,6 +20,7 @@ if($item=='fleet'){
 		</script>";
 }
 elseif ($item=='user') {
+    require_super_admin($koneksi);
     $name     = $_POST['name'];
     $username = $_POST['username'];
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT); // Hash password sebelum disimpan

@@ -6,3 +6,19 @@
   AddHandler application/x-httpd-ea-php82 .php .php8 .phtml
 </IfModule>
 # php -- END cPanel-generated handler, do not edit
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # 1. Blokir akses ke file pengembangan sensitif di root
+    RewriteRule ^(Dockerfile|docker-compose\.yml|\.dockerignore|\.gitignore|gulpfile\.js|package\.json|package-lock\.json|bower\.json|\.bowerrc|changelog\.md|changelog\.bat|test\.php)$ - [F,L]
+
+    # 2. Blokir akses ke folder tersembunyi / IDE metadata (.git, .vscode, dsb) secara rekursif
+    RewriteRule ^(\.git|\.vscode|.*/\.vscode) - [F,L]
+
+    # 3. Blokir file dokumentasi/teks di dalam direktori vendors (changelog.txt, readme.txt, dll)
+    RewriteRule ^vendors/.*\.(txt|md)$ - [F,L]
+
+    # 4. Blokir akses publik ke berkas log percobaan login (rate limit)
+    RewriteRule (login_attempts\.json)$ - [F,L]
+</IfModule>

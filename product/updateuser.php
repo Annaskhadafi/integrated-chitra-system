@@ -1,5 +1,7 @@
 <?php
 include "koneksi.php";
+include "auth_check.php";
+require_super_admin($koneksi);
 
 // Ambil data dari form dengan null coalescing
 $id_user    = $_POST['id_user'] ?? '';

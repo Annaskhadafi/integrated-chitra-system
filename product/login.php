@@ -1,3 +1,11 @@
+<?php
+require_once "login_helper.php";
+safe_session_start();
+
+$ip = get_ip_address();
+$lockout_remaining = check_lockout($ip);
+$show_captcha = get_failed_count($ip) >= CAPTCHA_THRESHOLD;
+?>
 <!DOCTYPE html>
 <html lang="en">
 <?php
@@ -20,14 +28,30 @@ include "sectionhead.php"; // call sectionhead.php as library
           <h3> Integrated Chitra System-ICS </h3>
           <div class="form-group">
             <!-- form username dilempar dengan fungsi POST -->
-            <input type="username" name="username" class="form-control" id="username" placeholder="Username" required>
+            <input type="username" name="username" class="form-control" id="username" placeholder="Username" required <?php echo ($lockout_remaining > 0) ? 'disabled' : ''; ?>>
           </div>
           <div class="form-group">
             <!-- form password dilempar dengan fungsi POST -->
-            <input type="password" name="password" class="form-control" id="pwd" placeholder="Password" required>
+            <input type="password" name="password" class="form-control" id="pwd" placeholder="Password" required <?php echo ($lockout_remaining > 0) ? 'disabled' : ''; ?>>
           </div>
+
+          <?php if ($lockout_remaining > 0): ?>
+            <div class="alert alert-danger" style="margin-top: 10px; font-size: 13px; text-align: left; background-color: #f2dede; color: #a94442; border-color: #ebccd1; padding: 10px; border-radius: 4px;">
+              <strong>Akses Diblokir Sementara!</strong> IP Anda melakukan terlalu banyak percobaan gagal. Silakan coba lagi dalam <?php echo $lockout_remaining; ?> menit.
+            </div>
+          <?php endif; ?>
+
+          <?php if ($show_captcha && $lockout_remaining == 0): 
+            $equation = generate_captcha();
+          ?>
+            <div class="form-group" style="text-align: left; margin-bottom: 15px;">
+              <label for="captcha" style="font-weight: bold; color: #555; display: block; margin-bottom: 5px;">Selesaikan Matematika: <?php echo $equation; ?> = ?</label>
+              <input type="text" name="captcha" class="form-control" id="captcha" placeholder="Jawaban Anda" required autocomplete="off">
+            </div>
+          <?php endif; ?>
+
           <div>
-            <button type="submit" name="submit" value="Login" class="btn btn-default">Login</button>
+            <button type="submit" name="submit" value="Login" class="btn btn-default" <?php echo ($lockout_remaining > 0) ? 'disabled style="cursor: not-allowed; opacity: 0.6;"' : ''; ?>>Login</button>
           </div>
           <div class="separator">
             <div class="clearfix"></div>

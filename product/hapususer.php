@@ -1,8 +1,10 @@
 <?php
+include "koneksi.php";
+include "auth_check.php";
+require_super_admin($koneksi);
+
 if (isset($_GET['iduser']) && is_numeric($_GET['iduser'])) {
     $iduser = intval($_GET['iduser']);
-
-    include "koneksi.php";
 
     $stmt = mysqli_prepare($koneksi, "DELETE FROM user WHERE id_user = ?");
     mysqli_stmt_bind_param($stmt, "i", $iduser);
