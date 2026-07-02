@@ -11,14 +11,16 @@ header("Access-Control-Allow-Headers: Content-Type");
 // CONFIG WA
 // ==========================
 $apiKey  = "09b3e08979d1474cb81c55c040744ca9";
-// Menggunakan groupId dari contoh kode WA yang Anda lampirkan (bisa disesuaikan kembali)
-$groupId = "120363425240446101@g.us"; 
+$groupId = "120363425240446101@g.us";
+
+// Cooldown notif WA = 1 jam
+$cooldownMinutes = 60;
 
 // ==========================
 // FUNCTION KIRIM WA
 // ==========================
-function sendWhatsapp($message, $apiKey, $groupId){
-
+function sendWhatsapp($message, $apiKey, $groupId)
+{
     $payload = json_encode([
         "apiKey"   => $apiKey,
         "id_group" => $groupId,
@@ -41,8 +43,11 @@ function sendWhatsapp($message, $apiKey, $groupId){
     ]);
 
     $response = curl_exec($curl);
+
     $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+
     $curlError = curl_error($curl);
+
     curl_close($curl);
 
     return [
@@ -67,16 +72,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $temperature = $data['temperature'] ?? null;
-    $pressure    = $data['pressure'] ?? null;
-    $unit        = $data['unit'] ?? 'PPA-BIB';
-    $device_id   = $data['device_id'] ?? null;
-    $timestamp   = $data['timestamp'] ?? date("Y-m-d H:i:s");
+    $temperature1 = $data['temperature1'] ?? null;
+    $temperature2 = $data['temperature2'] ?? null;
+    $pressure     = $data['pressure'] ?? null;
+    $unit         = $data['unit'] ?? 'PPA-BIB';
+    $device_id    = $data['device_id'] ?? null;
+    $timestamp    = date("Y-m-d H:i:s");
 
     // ==========================
-    // VALIDASI INPUT
+    // VALIDASI
     // ==========================
-    if ($temperature === null || $pressure === null || !$device_id) {
+    if (
+        $temperature1 === null ||
+        $temperature2 === null ||
+        $pressure === null ||
+        !$device_id
+    ) {
         echo json_encode([
             "status" => "error",
             "message" => "Invalid sensor data"
@@ -85,24 +96,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // ==========================
+    // STATUS ALARM
+    // ==========================
+    $status = [];
+    $isCritical = false;
+
+    if ($temperature1 >= 140) {
+        $status[] = "OVERHEAT T1";
+        $isCritical = true;
+    }
+
+    if ($temperature2 >= 140) {
+        $status[] = "OVERHEAT T2";
+        $isCritical = true;
+    }
+
+    if ($pressure >= 32) {
+        $status[] = "OVER PRESS";
+        $isCritical = true;
+    }
+
+    // ==========================
     // INSERT DATABASE
     // ==========================
     $stmt = $koneksi->prepare("
         INSERT INTO sensor_data
         (
-            temperature,
+            temperature1,
+            temperature2,
             pressure,
             unit,
             device_id,
             timestamp,
             is_notified
         )
-        VALUES (?, ?, ?, ?, ?, 0)
+        VALUES (?, ?, ?, ?, ?, ?, 0)
     ");
 
     $stmt->bind_param(
-        "ddsss",
-        $temperature,
+        "dddsss",
+        $temperature1,
+        $temperature2,
         $pressure,
         $unit,
         $device_id,
@@ -117,60 +151,90 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Ambil ID data yang baru saja masuk
     $lastId = $stmt->insert_id;
 
     // ==========================
-    // PENGKONDISIAN DATA BARU (RULE ALARM)
-    // ==========================
-    $status = [];
-    $isCritical = false;
-
-    // Rule 1: Overheat
-    if ($temperature >= 140) {
-        $status[] = "OVERHEAT";
-        $isCritical = true;
-    }
-
-    // Rule 2: Over Press
-    if ($pressure >= 32) {
-        $status[] = "OVER PRESS";
-        $isCritical = true;
-    }
-
-    // ==========================
-    // PROSES KIRIM NOTIFIKASI WA REAL-TIME
+    // COOLDOWN WA
     // ==========================
     if ($isCritical) {
-        $statusText = implode(" & ", $status);
 
-        // Format Pesan terstruktur menggunakan data yang baru di-insert
-        $msg  = "🔔 *MONITORING ALARM SENSOR*\n";
-        $msg .= "Status Terdeteksi: *" . $statusText . "*\n\n";
-        $msg .= "🚨 *ALARM INDUSTRIAL SENSOR*\n";
-        $msg .= "Device ID : " . $device_id . "\n";
-        $msg .= "Unit      : " . $unit . "\n";
-        $msg .= "Temp      : " . $temperature . " °C\n";
-        $msg .= "Pressure  : " . $pressure . " psi\n";
-        $msg .= "Time      : " . $timestamp;
+        $allowSend = true;
 
-        // Eksekusi fungsi kirim WA
-        $wa = sendWhatsapp($msg, $apiKey, $groupId);
+        $checkStmt = $koneksi->prepare("
+            SELECT timestamp
+            FROM sensor_data
+            WHERE device_id = ?
+            AND is_notified = 1
+            ORDER BY id DESC
+            LIMIT 1
+        ");
 
-        // Catat ke log file untuk kebutuhan debug/tracing
-        file_put_contents(
-            "log_wa.txt",
-            date("Y-m-d H:i:s") . " | ID: " . $lastId . " | RESPONSE : " . json_encode($wa) . PHP_EOL,
-            FILE_APPEND
-        );
+        $checkStmt->bind_param("s", $device_id);
+        $checkStmt->execute();
 
-        // Jika curl tidak error dan API mengembalikan response sukses, update is_notified
-        if (empty($wa['error'])) {
-            // Menggunakan prepared statement agar lebih aman dari SQL Injection
-            $updateStmt = $koneksi->prepare("UPDATE sensor_data SET is_notified = 1 WHERE id = ?");
-            $updateStmt->bind_param("i", $lastId);
-            $updateStmt->execute();
-            $updateStmt->close();
+        $resultCheck = $checkStmt->get_result();
+
+        if ($rowCheck = $resultCheck->fetch_assoc()) {
+
+            $lastNotifTime = strtotime($rowCheck['timestamp']);
+            $currentTime   = time();
+
+            $diffMinutes = ($currentTime - $lastNotifTime) / 60;
+
+            if ($diffMinutes < $cooldownMinutes) {
+                $allowSend = false;
+            }
+        }
+
+        $checkStmt->close();
+
+        // ==========================
+        // KIRIM WA
+        // ==========================
+        if ($allowSend) {
+
+            $statusText = implode(" & ", $status);
+
+            $msg  = "ЁЯЪи *MONITORING ALARM SENSOR*\n";
+            $msg .= "Status : *" . $statusText . "*\n\n";
+
+            $msg .= "тЪая╕П *ALARM INDUSTRIAL SENSOR*\n";
+            $msg .= "Device ID : " . $device_id . "\n";
+            $msg .= "Unit      : " . $unit . "\n";
+            $msg .= "Temp 1    : " . $temperature1 . " ┬░C\n";
+            $msg .= "Temp 2    : " . $temperature2 . " ┬░C\n";
+            $msg .= "Pressure  : " . $pressure . " psi\n";
+            $msg .= "Time      : " . $timestamp;
+
+            $wa = sendWhatsapp($msg, $apiKey, $groupId);
+
+            file_put_contents(
+                "log_wa.txt",
+                date("Y-m-d H:i:s")
+                    . " | ID: " . $lastId
+                    . " | RESPONSE : "
+                    . json_encode($wa)
+                    . PHP_EOL,
+                FILE_APPEND
+            );
+
+            if (
+                empty($wa['error']) &&
+                $wa['httpcode'] == 200
+            ) {
+
+                $updateStmt = $koneksi->prepare("
+                    UPDATE sensor_data
+                    SET is_notified = 1
+                    WHERE id = ?
+                ");
+
+                $updateStmt->bind_param("i", $lastId);
+
+                $updateStmt->execute();
+
+                $updateStmt->close();
+            }
         }
     }
 
@@ -182,6 +246,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $stmt->close();
     $koneksi->close();
+
     exit;
 }
 
@@ -194,13 +259,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         SELECT sd.*
         FROM sensor_data sd
         INNER JOIN (
-            SELECT device_id, MAX(timestamp) as max_time
+            SELECT device_id, MAX(id) as max_id
             FROM sensor_data
             GROUP BY device_id
         ) latest
         ON sd.device_id = latest.device_id
-        AND sd.timestamp = latest.max_time
-        ORDER BY sd.timestamp DESC
+        AND sd.id = latest.max_id
+        ORDER BY sd.id DESC
     ";
 
     $result = $koneksi->query($query);
@@ -214,12 +279,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
 
     $data = [];
+
     while ($row = $result->fetch_assoc()) {
+
+        $alarmStatus = 0;
+        $statusArr = [];
+
+        if ($row['temperature1'] >= 140) {
+            $alarmStatus = 1;
+            $statusArr[] = "OVERHEAT T1";
+        }
+
+        if ($row['temperature2'] >= 140) {
+            $alarmStatus = 1;
+            $statusArr[] = "OVERHEAT T2";
+        }
+
+        if ($row['pressure'] >= 32) {
+            $alarmStatus = 1;
+            $statusArr[] = "OVER PRESS";
+        }
+
+        $statusText = empty($statusArr)
+            ? "NORMAL"
+            : implode(" & ", $statusArr);
+
         $data[] = [
-            "device_id"   => $row['device_id'],
-            "temperature" => (float)$row['temperature'],
-            "pressure"    => (float)$row['pressure'],
-            "timestamp"   => $row['timestamp']
+            "device_id"    => $row['device_id'],
+            "temperature1" => (float)$row['temperature1'],
+            "temperature2" => (float)$row['temperature2'],
+            "pressure"     => (float)$row['pressure'],
+            "status_text"  => $statusText,
+            "alarm_status" => $alarmStatus,
+            "timestamp"    => $row['timestamp']
         ];
     }
 
@@ -230,14 +322,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     ]);
 
     $koneksi->close();
+
     exit;
 }
 
-// Jika method bukan POST atau GET
+// ==========================
+// INVALID METHOD
+// ==========================
 echo json_encode([
     "status" => "error",
     "message" => "Invalid method"
 ]);
-$koneksi->close();
 
-?>
+$koneksi->close();
