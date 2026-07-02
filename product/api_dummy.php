@@ -1,6 +1,7 @@
 <?php
 
 require_once "koneksi.php";
+date_default_timezone_set('Asia/Makassar');
 
 header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: *");
@@ -195,14 +196,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $statusText = implode(" & ", $status);
 
-            $msg  = "ЁЯЪи *MONITORING ALARM SENSOR*\n";
+            $msg  = "🚨 *MONITORING ALARM SENSOR*\n";
             $msg .= "Status : *" . $statusText . "*\n\n";
 
-            $msg .= "тЪая╕П *ALARM INDUSTRIAL SENSOR*\n";
+            $msg .= "⚠️ *ALARM INDUSTRIAL SENSOR*\n";
             $msg .= "Device ID : " . $device_id . "\n";
             $msg .= "Unit      : " . $unit . "\n";
-            $msg .= "Temp 1    : " . $temperature1 . " ┬░C\n";
-            $msg .= "Temp 2    : " . $temperature2 . " ┬░C\n";
+            $msg .= "Temp 1    : " . $temperature1 . " °C\n";
+            $msg .= "Temp 2    : " . $temperature2 . " °C\n";
             $msg .= "Pressure  : " . $pressure . " psi\n";
             $msg .= "Time      : " . $timestamp;
 
