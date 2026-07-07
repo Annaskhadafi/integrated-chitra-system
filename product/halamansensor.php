@@ -1,4 +1,8 @@
-<?php session_start(); ?>
+<?php
+include_once "koneksi.php";
+include_once "auth_check.php";
+require_user_levels($koneksi, array(1, 910)); // Admin & Super Admin
+?>
 <!DOCTYPE html>
 <html lang="en">
 

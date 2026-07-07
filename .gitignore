@@ -4,3 +4,4 @@ node_modules
 .sass-cache
 koneksi.php
 product/koneksi.php
+.aider*

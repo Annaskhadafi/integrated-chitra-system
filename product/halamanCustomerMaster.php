@@ -12,13 +12,16 @@
             <div class="profile">
               <div class="profile_info">
                 <?php 
-                  include "koneksi.php";
-                  $username=$_SESSION['username'];                
-                  $password=$_SESSION['password'];  
-                  $perintah = mysqli_query($koneksi,"SELECT * from user a,department b where a.username='$username' and a.password='$password' and a.department=b.id_dept");
-                  $user = mysqli_fetch_array($perintah);
-                  $dept =$user['department'];
-                  $name =$user['name'];
+                  include_once "koneksi.php";
+                  $username = $_SESSION['username'];
+                  $stmt = mysqli_prepare($koneksi, "SELECT * FROM user a, department b WHERE a.username = ? AND a.department = b.id_dept");
+                  mysqli_stmt_bind_param($stmt, "s", $username);
+                  mysqli_stmt_execute($stmt);
+                  $result = mysqli_stmt_get_result($stmt);
+                  $user = mysqli_fetch_array($result);
+                  $dept = $user ? $user['department'] : null;
+                  $name = $user ? $user['name'] : '';
+                  mysqli_stmt_close($stmt);
                 ?>
                 <h2>Technical <br><?php echo $name;?></h2>
               </div>

@@ -36,9 +36,33 @@ function check_user_level($koneksi, $allowed_levels) {
 
 // Fungsi untuk membatasi akses hanya untuk Super Admin (level 910)
 function require_super_admin($koneksi) {
-    if (!check_user_level($koneksi, [910])) {
+    if (!check_user_level($koneksi, array(910))) {
         http_response_code(403);
         echo "<script>alert('Akses ditolak. Halaman ini memerlukan hak akses Super Admin.'); window.location.href='halamanics.php';</script>";
+        exit;
+    }
+}
+
+/**
+ * Membatasi akses halaman berdasarkan daftar level pengguna yang diperbolehkan.
+ * Contoh penggunaan:
+ *   require_user_levels($koneksi, array(1, 910));       // Admin & Super Admin
+ *   require_user_levels($koneksi, array(1, 3, 910));    // Admin, Managerial & Super Admin
+ *   require_user_levels($koneksi, array(910));           // Super Admin saja
+ * 
+ * Level referensi: 1=Admin, 2=Staff, 3=Managerial, 910=Super Admin
+ */
+function require_user_levels($koneksi, $allowed_levels) {
+    if (!check_user_level($koneksi, $allowed_levels)) {
+        http_response_code(403);
+        // Buat pesan level yang diizinkan untuk informasi
+        $level_names = array();
+        $map = array(1 => 'Admin', 2 => 'Staff', 3 => 'Managerial', 910 => 'Super Admin');
+        foreach ($allowed_levels as $lvl) {
+            $level_names[] = isset($map[$lvl]) ? $map[$lvl] : "Level $lvl";
+        }
+        $allowed_str = implode(', ', $level_names);
+        echo "<script>alert('Akses ditolak. Halaman ini hanya dapat diakses oleh: $allowed_str.'); window.location.href='halamanics.php';</script>";
         exit;
     }
 }

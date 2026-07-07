@@ -1,4 +1,4 @@
-<?php session_start();?>
+<?php include_once "auth_check.php"; ?>
 <!DOCTYPE html>
 <html lang="en">
   <?php 
