@@ -18,242 +18,418 @@ require_user_levels($koneksi, array(1, 910));
 <?php include 'header.php'; ?>
 
 <style>
+:root {
+    --sensor-primary: #2a3f54;
+    --sensor-success: #28a745;
+    --sensor-success-soft: #e8f7ed;
+    --sensor-danger: #dc3545;
+    --sensor-danger-soft: #fff0f1;
+    --sensor-warning: #f39c12;
+    --sensor-border: #e4e9f0;
+    --sensor-text: #25313f;
+    --sensor-muted: #6b7785;
+    --sensor-background: #f4f6f9;
+}
+
+/* =====================================================
+   PANEL
+===================================================== */
+.sensor-panel {
+    border: 0;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 5px 24px rgba(42, 63, 84, 0.08);
+}
+
+.sensor-panel .x_title {
+    margin-bottom: 0;
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--sensor-border);
+}
+
+.sensor-panel .x_title h2 {
+    float: none;
+    margin: 0;
+    color: var(--sensor-primary);
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.sensor-panel .x_content {
+    padding: 22px;
+    background: var(--sensor-background);
+}
+
+/* =====================================================
+   SENSOR GRID
+===================================================== */
+.sensor-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 900px);
+    justify-content: start;
+    gap: 22px;
+    width: 100%;
+}
 
 /* =====================================================
    SENSOR CARD
 ===================================================== */
 .tpms-card {
-    border: 4px solid #28a745;
-    border-radius: 14px;
-    padding: 15px;
-    margin-bottom: 20px;
-    background-color: #f8f9fa;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-    transition: all 0.3s ease;
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border: 1px solid var(--sensor-border);
+    border-left: 7px solid var(--sensor-success);
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 8px 28px rgba(42, 63, 84, 0.10);
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
 }
 
 .tpms-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 7px 18px rgba(0, 0, 0, 0.16);
+    box-shadow: 0 12px 35px rgba(42, 63, 84, 0.14);
 }
 
-/* Kondisi critical */
 .tpms-card.critical {
-    border-color: #dc3545;
-    background-color: #ff4d4d;
-    color: #ffffff;
-    animation: criticalBlink 1s infinite;
+    border-left-color: var(--sensor-danger);
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #ffffff 65%,
+            #fff4f5 100%
+        );
 }
 
-@keyframes criticalBlink {
+/*
+ * Tidak lagi membuat seluruh kartu berkedip.
+ * Hanya indikator alarm yang diberi animasi.
+ */
+@keyframes alarmPulse {
     0% {
-        opacity: 1;
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.42);
     }
 
-    50% {
-        opacity: 0.65;
+    70% {
+        box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
     }
 
     100% {
-        opacity: 1;
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
     }
 }
 
 /* =====================================================
-   HEADER CARD
+   CARD HEADER
 ===================================================== */
+.tpms-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--sensor-border);
+}
+
+.device-information {
+    min-width: 0;
+}
+
 .tpms-header {
-    text-align: center;
-    font-size: 20px;
-    font-weight: bold;
-    color: #2c3e50;
+    margin: 0;
+    color: var(--sensor-text);
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.2;
+    word-break: break-word;
 }
 
 .tpms-unit {
-    margin-top: 4px;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 7px;
+    color: var(--sensor-muted);
     font-size: 14px;
     font-weight: 600;
-    color: #6c757d;
 }
 
-.tpms-card.critical .tpms-header,
-.tpms-card.critical .tpms-unit {
-    color: #ffffff;
+.tpms-unit i {
+    color: #5b7c99;
+}
+
+.device-state {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 8px;
+    padding: 8px 13px;
+    border-radius: 30px;
+    color: #166534;
+    background: var(--sensor-success-soft);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.35px;
+}
+
+.device-state.critical-state {
+    color: #991b1b;
+    background: #fee2e2;
+}
+
+.device-state-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--sensor-success);
+}
+
+.device-state.critical-state .device-state-dot {
+    background: var(--sensor-danger);
+    animation: alarmPulse 1.4s infinite;
 }
 
 /* =====================================================
-   CONTENT CARD
+   CARD BODY
 ===================================================== */
 .tpms-body {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-top: 15px;
+    display: grid;
+    grid-template-columns: 215px minmax(0, 1fr);
+    gap: 24px;
+    padding: 24px;
 }
 
+/* =====================================================
+   DEVICE IMAGE
+===================================================== */
 .tpms-left {
-    flex-shrink: 0;
+    display: flex;
+    min-height: 260px;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    border: 1px solid #e7ebf0;
+    border-radius: 16px;
+    background:
+        radial-gradient(
+            circle at center,
+            #ffffff 0%,
+            #f5f8fb 100%
+        );
 }
 
 .tpms-left img {
-    width: 120px;
+    display: block;
+    width: 175px;
     max-width: 100%;
     height: auto;
-}
-
-.tpms-right {
-    width: 100%;
-}
-
-.tpms-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.tpms-table td {
-    padding: 6px 4px;
-    font-size: 14px;
-    vertical-align: middle;
-}
-
-.tpms-table td:first-child {
-    min-width: 115px;
-    font-weight: 600;
-}
-
-.tpms-table td:nth-child(2) {
-    white-space: nowrap;
-    font-weight: bold;
-}
-
-.tpms-table td:last-child {
-    text-align: right;
+    object-fit: contain;
 }
 
 /* =====================================================
-   STATUS BADGE
+   SENSOR DATA
+===================================================== */
+.tpms-right {
+    min-width: 0;
+}
+
+.sensor-list {
+    display: grid;
+    gap: 12px;
+}
+
+.sensor-row {
+    display: grid;
+    grid-template-columns:
+        minmax(145px, 1fr)
+        minmax(110px, auto)
+        minmax(100px, auto);
+    align-items: center;
+    gap: 14px;
+    min-height: 66px;
+    padding: 12px 14px;
+    border: 1px solid #e8edf2;
+    border-radius: 13px;
+    background: #fbfcfd;
+}
+
+.sensor-row:hover {
+    background: #f6f9fb;
+}
+
+.sensor-name {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    gap: 11px;
+    color: var(--sensor-text);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.sensor-icon {
+    display: inline-flex;
+    width: 38px;
+    height: 38px;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 10px;
+    color: #42627d;
+    background: #eaf1f7;
+    font-size: 17px;
+}
+
+.sensor-value {
+    color: var(--sensor-text);
+    font-size: 17px;
+    font-weight: 800;
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* =====================================================
+   STATUS BADGES
 ===================================================== */
 .status-badge {
-    display: inline-block;
-    min-width: 75px;
-    padding: 4px 8px;
-    border-radius: 14px;
+    display: inline-flex;
+    min-width: 96px;
+    min-height: 32px;
+    align-items: center;
+    justify-content: center;
+    justify-self: end;
+    padding: 6px 11px;
+    border-radius: 30px;
     font-size: 11px;
-    font-weight: bold;
+    font-weight: 800;
+    line-height: 1.2;
     text-align: center;
+    white-space: nowrap;
 }
 
 .status-normal {
-    color: #ffffff;
-    background-color: #28a745;
+    color: #166534;
+    background: #dcfce7;
+    border: 1px solid #bbf7d0;
 }
 
 .status-danger {
-    color: #ffffff;
-    background-color: #dc3545;
+    color: #991b1b;
+    background: #fee2e2;
+    border: 1px solid #fecaca;
 }
 
 .status-alarm-off {
-    color: #ffffff;
-    background-color: #6c757d;
+    color: #4b5563;
+    background: #f1f3f5;
+    border: 1px solid #dee2e6;
 }
 
 .status-alarm-on {
-    color: #721c24;
-    background-color: #ffffff;
-}
-
-/* Badge tetap terbaca ketika card berwarna merah */
-.tpms-card.critical .status-normal {
-    color: #155724;
-    background-color: #d4edda;
-}
-
-.tpms-card.critical .status-danger {
-    color: #721c24;
-    background-color: #ffffff;
-}
-
-.tpms-card.critical .status-alarm-off {
-    color: #343a40;
-    background-color: #ffffff;
+    color: #ffffff;
+    background: var(--sensor-danger);
+    border: 1px solid var(--sensor-danger);
+    animation: alarmPulse 1.4s infinite;
 }
 
 /* =====================================================
    OVERALL STATUS
 ===================================================== */
 .overall-status {
-    margin-top: 15px;
-    padding: 10px;
-    border-radius: 9px;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin: 0 24px 20px;
+    padding: 15px 18px;
+    border-radius: 14px;
 }
 
 .overall-status-normal {
-    color: #155724;
-    background-color: #d4edda;
-    border: 1px solid #c3e6cb;
+    color: #166534;
+    background: var(--sensor-success-soft);
+    border: 1px solid #bce5c8;
 }
 
 .overall-status-danger {
-    color: #721c24;
-    background-color: #f8d7da;
-    border: 1px solid #f5c6cb;
+    color: #991b1b;
+    background: var(--sensor-danger-soft);
+    border: 1px solid #f6c7cc;
 }
 
-.tpms-card.critical .overall-status {
-    color: #721c24;
-    background-color: #ffffff;
-    border-color: #ffffff;
+.overall-label-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.overall-icon {
+    display: inline-flex;
+    width: 42px;
+    height: 42px;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.75);
+    font-size: 19px;
 }
 
 .overall-label {
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 800;
+    letter-spacing: 0.5px;
 }
 
 .overall-value {
     margin-top: 3px;
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.overall-indicator {
+    flex-shrink: 0;
+    font-size: 23px;
 }
 
 /* =====================================================
    TIMESTAMP
 ===================================================== */
-.tpms-timestamp {
-    margin-top: 12px;
-    padding-top: 9px;
-    border-top: 1px solid #dee2e6;
+.tpms-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 24px;
+    border-top: 1px solid var(--sensor-border);
+    color: var(--sensor-muted);
+    background: #fafbfd;
     font-size: 12px;
-    color: #6c757d;
 }
 
-.tpms-card.critical .tpms-timestamp {
-    color: #ffffff;
-    border-top-color: rgba(255, 255, 255, 0.55);
+.tpms-timestamp {
+    display: flex;
+    align-items: center;
+    gap: 7px;
 }
 
-/* =====================================================
-   LOADING, ERROR, EMPTY
-===================================================== */
-.sensor-message {
-    width: 100%;
-    padding: 35px 15px;
-    text-align: center;
+.live-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #28784a;
+    font-weight: 700;
 }
 
-.sensor-message h3 {
-    margin-top: 0;
-}
-
-.sensor-error {
-    color: #dc3545;
-}
-
-.sensor-empty {
-    color: #6c757d;
+.live-indicator-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--sensor-success);
 }
 
 /* =====================================================
@@ -261,42 +437,154 @@ require_user_levels($koneksi, array(1, 910));
 ===================================================== */
 .audio-notice {
     display: none;
-    margin-bottom: 15px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
     padding: 12px 15px;
-    color: #856404;
-    background-color: #fff3cd;
-    border: 1px solid #ffeeba;
-    border-radius: 7px;
+    color: #7a5300;
+    background: #fff8df;
+    border: 1px solid #f6dc8c;
+    border-radius: 10px;
     cursor: pointer;
 }
 
 .audio-notice i {
-    margin-right: 5px;
+    margin-right: 7px;
+}
+
+/* =====================================================
+   LOADING, ERROR, EMPTY
+===================================================== */
+.sensor-message {
+    width: 100%;
+    padding: 55px 20px;
+    border: 1px dashed #ccd5df;
+    border-radius: 15px;
+    color: var(--sensor-muted);
+    background: #ffffff;
+    text-align: center;
+}
+
+.sensor-message i {
+    display: block;
+    margin-bottom: 13px;
+    color: #7890a6;
+    font-size: 32px;
+}
+
+.sensor-message h3 {
+    margin: 0 0 7px;
+    color: var(--sensor-text);
+    font-size: 19px;
+    font-weight: 700;
+}
+
+.sensor-message p {
+    margin: 0;
+}
+
+.sensor-error i,
+.sensor-error h3 {
+    color: var(--sensor-danger);
 }
 
 /* =====================================================
    RESPONSIVE
 ===================================================== */
-@media (max-width: 767px) {
-
+@media (max-width: 900px) {
     .tpms-body {
-        flex-direction: column;
-        align-items: center;
+        grid-template-columns: 180px minmax(0, 1fr);
     }
 
     .tpms-left img {
-        width: 105px;
+        width: 145px;
     }
 
-    .tpms-table td {
-        font-size: 13px;
-    }
-
-    .tpms-table td:first-child {
-        min-width: 100px;
+    .sensor-row {
+        grid-template-columns:
+            minmax(135px, 1fr)
+            minmax(95px, auto)
+            minmax(90px, auto);
     }
 }
 
+@media (max-width: 700px) {
+    .sensor-panel .x_content {
+        padding: 14px;
+    }
+
+    .tpms-card-header {
+        align-items: flex-start;
+        padding: 18px;
+    }
+
+    .tpms-header {
+        font-size: 21px;
+    }
+
+    .tpms-body {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 18px;
+    }
+
+    .tpms-left {
+        min-height: 180px;
+    }
+
+    .tpms-left img {
+        width: 145px;
+    }
+
+    .sensor-row {
+        grid-template-columns: 1fr auto;
+        gap: 9px 12px;
+    }
+
+    .sensor-name {
+        grid-column: 1 / 2;
+    }
+
+    .sensor-value {
+        grid-column: 2 / 3;
+    }
+
+    .sensor-row .status-badge {
+        grid-column: 1 / 3;
+        width: 100%;
+        justify-self: stretch;
+    }
+
+    .overall-status {
+        align-items: flex-start;
+        margin: 0 18px 18px;
+    }
+
+    .overall-indicator {
+        display: none;
+    }
+
+    .tpms-footer {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 13px 18px;
+    }
+}
+
+@media (max-width: 420px) {
+    .tpms-card-header {
+        flex-direction: column;
+    }
+
+    .device-state {
+        align-self: flex-start;
+    }
+
+    .sensor-value {
+        font-size: 15px;
+    }
+}
 </style>
 
 <body class="nav-md">
@@ -306,7 +594,6 @@ require_user_levels($koneksi, array(1, 910));
 
         <?php include('template_menu.php'); ?>
 
-        <!-- TOP NAVIGATION -->
         <div class="top_nav">
             <div class="nav_menu">
 
@@ -335,34 +622,45 @@ require_user_levels($koneksi, array(1, 910));
             <div class="right_col" role="main">
                 <div class="row">
 
-                    <div class="x_panel">
+                    <div class="x_panel sensor-panel">
 
                         <div class="x_title">
-                            <h2>Industrial Sensor Monitoring</h2>
+                            <h2>
+                                <i class="fa fa-line-chart"></i>
+                                Industrial Sensor Monitoring
+                            </h2>
+
                             <div class="clearfix"></div>
                         </div>
 
                         <div class="x_content">
 
-                            <!-- Informasi untuk mengaktifkan audio -->
                             <div
                                 id="audioNotice"
                                 class="audio-notice"
                                 onclick="unlockAlarmAudio()"
                             >
-                                <i class="fa fa-volume-up"></i>
-                                Klik di sini untuk mengaktifkan suara alarm.
+                                <span>
+                                    <i class="fa fa-volume-up"></i>
+                                    Klik di sini untuk mengaktifkan suara alarm.
+                                </span>
+
+                                <i class="fa fa-chevron-right"></i>
                             </div>
 
-                            <!-- Container sensor -->
-                            <div class="row" id="panelContainer">
+                            <div
+                                class="sensor-grid"
+                                id="panelContainer"
+                            >
+                                <div class="sensor-message">
+                                    <i class="fa fa-spinner fa-spin"></i>
 
-                                <div class="col-md-12">
-                                    <div class="sensor-message">
-                                        <h3>Loading data sensor...</h3>
-                                    </div>
+                                    <h3>Loading data sensor...</h3>
+
+                                    <p>
+                                        Mengambil data terbaru dari perangkat.
+                                    </p>
                                 </div>
-
                             </div>
 
                         </div>
@@ -381,29 +679,18 @@ require_user_levels($koneksi, array(1, 910));
 <script src="../vendors/bootstrap/dist/js/bootstrap.min.js"></script>
 
 <script>
-
 "use strict";
 
 /* =====================================================
    KONFIGURASI API
 ===================================================== */
-
 const API_URL = "api_dummy.php";
-
-/*
- * Refresh data setiap 3 detik.
- */
 const REFRESH_INTERVAL = 3000;
-
-/*
- * Alarm dapat diputar kembali setelah 5 detik.
- */
 const ALARM_INTERVAL = 5000;
 
 /* =====================================================
-   VARIABEL GLOBAL
+   AUDIO
 ===================================================== */
-
 const alarmAudio = new Audio(
     "https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg"
 );
@@ -419,9 +706,7 @@ let isLoadingData = false;
 /* =====================================================
    AKTIVASI AUDIO
 ===================================================== */
-
 function unlockAlarmAudio() {
-
     if (audioUnlocked) {
         hideAudioNotice();
         return;
@@ -431,7 +716,6 @@ function unlockAlarmAudio() {
 
     alarmAudio.play()
         .then(function () {
-
             alarmAudio.pause();
             alarmAudio.currentTime = 0;
 
@@ -439,46 +723,30 @@ function unlockAlarmAudio() {
 
             hideAudioNotice();
 
-            console.log("Audio alarm berhasil diaktifkan.");
-
             if (currentAlarmStatus) {
                 playAlarm(true);
             }
         })
-        .catch(function (error) {
-
-            console.warn(
-                "Browser belum mengizinkan audio:",
-                error
-            );
-
+        .catch(function () {
             showAudioNotice();
         });
 }
 
-/*
- * Browser mengharuskan interaksi pengguna
- * sebelum audio dapat diputar.
- */
 document.addEventListener("click", function () {
-
     if (!audioUnlocked) {
         unlockAlarmAudio();
     }
-
 });
 
 function showAudioNotice() {
-
     const notice = document.getElementById("audioNotice");
 
     if (notice) {
-        notice.style.display = "block";
+        notice.style.display = "flex";
     }
 }
 
 function hideAudioNotice() {
-
     const notice = document.getElementById("audioNotice");
 
     if (notice) {
@@ -489,9 +757,7 @@ function hideAudioNotice() {
 /* =====================================================
    HELPER
 ===================================================== */
-
 function isStatusActive(value) {
-
     return (
         Number(value) === 1 ||
         value === true ||
@@ -500,10 +766,10 @@ function isStatusActive(value) {
 }
 
 function formatNumber(value, decimalPlaces) {
-
-    if (decimalPlaces === undefined) {
-        decimalPlaces = 2;
-    }
+    const decimals =
+        decimalPlaces === undefined
+            ? 2
+            : decimalPlaces;
 
     const numberValue = Number(value);
 
@@ -511,12 +777,15 @@ function formatNumber(value, decimalPlaces) {
         return "-";
     }
 
-    return numberValue.toFixed(decimalPlaces);
+    return numberValue.toFixed(decimals);
 }
 
 function escapeHtml(value) {
-
-    return String(value === null || value === undefined ? "" : value)
+    return String(
+        value === null || value === undefined
+            ? ""
+            : value
+    )
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
@@ -525,8 +794,11 @@ function escapeHtml(value) {
 }
 
 function normalizeOverallValue(value) {
-
-    return String(value === null || value === undefined ? "" : value)
+    return String(
+        value === null || value === undefined
+            ? ""
+            : value
+    )
         .trim()
         .toLowerCase()
         .replace(/_/g, "")
@@ -535,35 +807,36 @@ function normalizeOverallValue(value) {
 }
 
 function isOverallCritical(value) {
-
     const normalized = normalizeOverallValue(value);
 
-    if (
+    return !(
         normalized === "" ||
         normalized === "normal" ||
         normalized === "ok"
-    ) {
-        return false;
-    }
-
-    return true;
+    );
 }
 
 function formatOverallStatus(value) {
-
     const normalized = normalizeOverallValue(value);
 
-    const overallLabels = {
+    const labels = {
         "normal": "NORMAL",
         "ok": "NORMAL",
 
-        "overpressure": "OVER PRESSURE",
+        "overpressure":
+            "OVER PRESSURE",
 
-        "overtemp1": "OVER TEMPERATURE 1",
-        "overtemperature1": "OVER TEMPERATURE 1",
+        "overtemp1":
+            "OVER TEMPERATURE 1",
 
-        "overtemp2": "OVER TEMPERATURE 2",
-        "overtemperature2": "OVER TEMPERATURE 2",
+        "overtemperature1":
+            "OVER TEMPERATURE 1",
+
+        "overtemp2":
+            "OVER TEMPERATURE 2",
+
+        "overtemperature2":
+            "OVER TEMPERATURE 2",
 
         "overtemp1overtemp2":
             "OVER TEMPERATURE 1 & 2",
@@ -581,8 +854,8 @@ function formatOverallStatus(value) {
             "ALARM ACTIVE"
     };
 
-    if (overallLabels[normalized]) {
-        return overallLabels[normalized];
+    if (labels[normalized]) {
+        return labels[normalized];
     }
 
     if (normalized === "") {
@@ -595,56 +868,83 @@ function formatOverallStatus(value) {
         .toUpperCase();
 }
 
-/* =====================================================
-   STATUS BADGE
-===================================================== */
-
 function createSensorBadge(
     statusValue,
     normalText,
     dangerText
 ) {
-
-    if (isStatusActive(statusValue)) {
-
-        return `
-            <span class="status-badge status-danger">
-                ${escapeHtml(dangerText)}
-            </span>
-        `;
-    }
+    const active = isStatusActive(statusValue);
 
     return `
-        <span class="status-badge status-normal">
-            ${escapeHtml(normalText)}
+        <span
+            class="
+                status-badge
+                ${active ? "status-danger" : "status-normal"}
+            "
+        >
+            ${escapeHtml(
+                active ? dangerText : normalText
+            )}
         </span>
     `;
 }
 
 function createAlarmBadge(statusValue) {
-
-    if (isStatusActive(statusValue)) {
-
-        return `
-            <span class="status-badge status-alarm-on">
-                ALARM ON
-            </span>
-        `;
-    }
+    const active = isStatusActive(statusValue);
 
     return `
-        <span class="status-badge status-alarm-off">
-            ALARM OFF
+        <span
+            class="
+                status-badge
+                ${
+                    active
+                        ? "status-alarm-on"
+                        : "status-alarm-off"
+                }
+            "
+        >
+            ${active ? "ALARM ON" : "ALARM OFF"}
         </span>
     `;
 }
 
-/* =====================================================
-   NORMALISASI DATA API
-===================================================== */
+function createSensorRow(
+    iconClass,
+    label,
+    value,
+    unit,
+    statusValue,
+    dangerText
+) {
+    return `
+        <div class="sensor-row">
+
+            <div class="sensor-name">
+                <span class="sensor-icon">
+                    <i class="${iconClass}"></i>
+                </span>
+
+                <span>
+                    ${escapeHtml(label)}
+                </span>
+            </div>
+
+            <div class="sensor-value">
+                ${escapeHtml(value)}
+                ${escapeHtml(unit)}
+            </div>
+
+            ${createSensorBadge(
+                statusValue,
+                "NORMAL",
+                dangerText
+            )}
+
+        </div>
+    `;
+}
 
 function normalizeApiData(data) {
-
     if (Array.isArray(data)) {
         return data;
     }
@@ -659,12 +959,7 @@ function normalizeApiData(data) {
 /* =====================================================
    LOAD DATA
 ===================================================== */
-
 async function loadData() {
-
-    /*
-     * Mencegah request bertumpuk apabila koneksi lambat.
-     */
     if (isLoadingData) {
         return;
     }
@@ -672,10 +967,10 @@ async function loadData() {
     isLoadingData = true;
 
     try {
-
-        const separator = API_URL.indexOf("?") >= 0
-            ? "&"
-            : "?";
+        const separator =
+            API_URL.indexOf("?") >= 0
+                ? "&"
+                : "?";
 
         const requestUrl =
             API_URL +
@@ -692,7 +987,6 @@ async function loadData() {
         });
 
         if (!response.ok) {
-
             throw new Error(
                 "HTTP " +
                 response.status +
@@ -703,8 +997,10 @@ async function loadData() {
 
         const result = await response.json();
 
-        if (!result || result.status !== "success") {
-
+        if (
+            !result ||
+            result.status !== "success"
+        ) {
             const errorMessage =
                 result && result.message
                     ? result.message
@@ -721,7 +1017,6 @@ async function loadData() {
         );
 
         if (sensorData.length === 0) {
-
             showEmptyData();
             stopAlarm();
 
@@ -731,7 +1026,6 @@ async function loadData() {
         renderData(sensorData);
 
     } catch (error) {
-
         console.error(
             "Gagal mengambil data sensor:",
             error
@@ -745,7 +1039,6 @@ async function loadData() {
         stopAlarm();
 
     } finally {
-
         isLoadingData = false;
     }
 }
@@ -753,26 +1046,14 @@ async function loadData() {
 /* =====================================================
    RENDER DATA
 ===================================================== */
-
 function renderData(data) {
-
     let html = "";
     let hasActiveAlarm = false;
 
     /*
-     * Hanya menampilkan satu data terbaru.
-     *
-     * Apabila nantinya API menampilkan banyak device
-     * dan semua device ingin ditampilkan, ubah:
-     *
-     * data.slice(0, 1).forEach(...)
-     *
-     * menjadi:
-     *
-     * data.forEach(...)
+     * Tetap menampilkan satu device seperti kode sebelumnya.
      */
     data.slice(0, 1).forEach(function (device) {
-
         const statusPressure = isStatusActive(
             device.status_pressure
         );
@@ -793,10 +1074,6 @@ function renderData(data) {
             device.status_overall
         );
 
-        /*
-         * Card menjadi merah apabila salah satu
-         * status sensor critical atau overall tidak normal.
-         */
         const isCritical =
             statusPressure ||
             statusTemp1 ||
@@ -804,166 +1081,217 @@ function renderData(data) {
             statusAlarm ||
             overallCritical;
 
-        /*
-         * Suara alarm hanya mengikuti status_alarm.
-         */
         if (statusAlarm) {
             hasActiveAlarm = true;
         }
-
-        const cardClass = isCritical
-            ? "critical"
-            : "";
-
-        const overallClass = isCritical
-            ? "overall-status-danger"
-            : "overall-status-normal";
 
         const overallText = formatOverallStatus(
             device.status_overall
         );
 
+        const stateLabel =
+            isCritical
+                ? "CRITICAL"
+                : "NORMAL";
+
+        const stateClass =
+            isCritical
+                ? "critical-state"
+                : "";
+
+        const overallClass =
+            isCritical
+                ? "overall-status-danger"
+                : "overall-status-normal";
+
+        const overallIcon =
+            isCritical
+                ? "fa fa-exclamation-triangle"
+                : "fa fa-check-circle";
+
+        const overallIndicator =
+            isCritical
+                ? "fa fa-warning"
+                : "fa fa-check";
+
         html += `
-            <div class="col-lg-4 col-md-6 col-sm-12">
+            <div
+                class="
+                    tpms-card
+                    ${isCritical ? "critical" : ""}
+                "
+            >
 
-                <div class="tpms-card ${cardClass}">
+                <div class="tpms-card-header">
 
-                    <div class="tpms-header">
-                        ${escapeHtml(
-                            device.device_id || "-"
-                        )}
-                    </div>
+                    <div class="device-information">
 
-                    <div class="tpms-unit">
-                        Unit:
-                        ${escapeHtml(
-                            device.unit || "-"
-                        )}
-                    </div>
+                        <h3 class="tpms-header">
+                            ${escapeHtml(
+                                device.device_id || "-"
+                            )}
+                        </h3>
 
-                    <div class="tpms-body">
+                        <div class="tpms-unit">
+                            <i class="fa fa-industry"></i>
 
-                        <div class="tpms-left">
-
-                            <img
-                                src="images/control panel.png"
-                                alt="Industrial Sensor"
-                                onerror="
-                                    this.style.display='none';
-                                "
-                            >
-
-                        </div>
-
-                        <div class="tpms-right">
-
-                            <table class="tpms-table">
-
-                                <tr>
-
-                                    <td>Temperature 1</td>
-
-                                    <td>
-                                        ${formatNumber(
-                                            device.temperature,
-                                            2
-                                        )} °C
-                                    </td>
-
-                                    <td>
-                                        ${createSensorBadge(
-                                            device.status_temp1,
-                                            "NORMAL",
-                                            "OVER TEMP"
-                                        )}
-                                    </td>
-
-                                </tr>
-
-                                <tr>
-
-                                    <td>Temperature 2</td>
-
-                                    <td>
-                                        ${formatNumber(
-                                            device.temperature2,
-                                            2
-                                        )} °C
-                                    </td>
-
-                                    <td>
-                                        ${createSensorBadge(
-                                            device.status_temp2,
-                                            "NORMAL",
-                                            "OVER TEMP"
-                                        )}
-                                    </td>
-
-                                </tr>
-
-                                <tr>
-
-                                    <td>Pressure</td>
-
-                                    <td>
-                                        ${formatNumber(
-                                            device.pressure,
-                                            2
-                                        )} psi
-                                    </td>
-
-                                    <td>
-                                        ${createSensorBadge(
-                                            device.status_pressure,
-                                            "NORMAL",
-                                            "OVER PRESS"
-                                        )}
-                                    </td>
-
-                                </tr>
-
-                                <tr>
-
-                                    <td>Alarm</td>
-
-                                    <td colspan="2">
-                                        ${createAlarmBadge(
-                                            device.status_alarm
-                                        )}
-                                    </td>
-
-                                </tr>
-
-                            </table>
-
+                            <span>
+                                Unit:
+                                ${escapeHtml(
+                                    device.unit || "-"
+                                )}
+                            </span>
                         </div>
 
                     </div>
 
                     <div
                         class="
-                            overall-status
-                            ${overallClass}
+                            device-state
+                            ${stateClass}
                         "
                     >
+                        <span class="device-state-dot"></span>
 
-                        <div class="overall-label">
-                            OVERALL STATUS
-                        </div>
+                        ${stateLabel}
+                    </div>
 
-                        <div class="overall-value">
-                            ${escapeHtml(overallText)}
+                </div>
+
+                <div class="tpms-body">
+
+                    <div class="tpms-left">
+
+                        <img
+                            src="images/control panel.png"
+                            alt="Industrial Sensor"
+                            onerror="
+                                this.style.display='none';
+                            "
+                        >
+
+                    </div>
+
+                    <div class="tpms-right">
+
+                        <div class="sensor-list">
+
+                            ${createSensorRow(
+                                "fa fa-thermometer-half",
+                                "Temperature 1",
+                                formatNumber(
+                                    device.temperature,
+                                    2
+                                ),
+                                "°C",
+                                device.status_temp1,
+                                "OVER TEMP"
+                            )}
+
+                            ${createSensorRow(
+                                "fa fa-thermometer-half",
+                                "Temperature 2",
+                                formatNumber(
+                                    device.temperature2,
+                                    2
+                                ),
+                                "°C",
+                                device.status_temp2,
+                                "OVER TEMP"
+                            )}
+
+                            ${createSensorRow(
+                                "fa fa-tachometer",
+                                "Pressure",
+                                formatNumber(
+                                    device.pressure,
+                                    2
+                                ),
+                                "psi",
+                                device.status_pressure,
+                                "OVER PRESS"
+                            )}
+
+                            <div class="sensor-row">
+
+                                <div class="sensor-name">
+                                    <span class="sensor-icon">
+                                        <i class="fa fa-bell"></i>
+                                    </span>
+
+                                    <span>
+                                        Alarm
+                                    </span>
+                                </div>
+
+                                <div class="sensor-value">
+                                    ${
+                                        statusAlarm
+                                            ? "Active"
+                                            : "Inactive"
+                                    }
+                                </div>
+
+                                ${createAlarmBadge(
+                                    device.status_alarm
+                                )}
+
+                            </div>
+
                         </div>
 
                     </div>
 
+                </div>
+
+                <div
+                    class="
+                        overall-status
+                        ${overallClass}
+                    "
+                >
+
+                    <div class="overall-label-area">
+
+                        <span class="overall-icon">
+                            <i class="${overallIcon}"></i>
+                        </span>
+
+                        <div>
+                            <div class="overall-label">
+                                OVERALL STATUS
+                            </div>
+
+                            <div class="overall-value">
+                                ${escapeHtml(overallText)}
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <span class="overall-indicator">
+                        <i class="${overallIndicator}"></i>
+                    </span>
+
+                </div>
+
+                <div class="tpms-footer">
+
                     <div class="tpms-timestamp">
+                        <i class="fa fa-clock-o"></i>
 
-                        Last update:
-                        ${escapeHtml(
-                            device.timestamp || "-"
-                        )}
+                        <span>
+                            Last update:
+                            ${escapeHtml(
+                                device.timestamp || "-"
+                            )}
+                        </span>
+                    </div>
 
+                    <div class="live-indicator">
+                        <span class="live-indicator-dot"></span>
+
+                        Auto refresh 3 detik
                     </div>
 
                 </div>
@@ -986,19 +1314,15 @@ function renderData(data) {
 }
 
 /* =====================================================
-   AUDIO ALARM
+   ALARM
 ===================================================== */
-
 function playAlarm(forcePlay) {
-
     if (!currentAlarmStatus) {
         return;
     }
 
     if (!audioUnlocked) {
-
         showAudioNotice();
-
         return;
     }
 
@@ -1006,7 +1330,8 @@ function playAlarm(forcePlay) {
 
     const canPlay =
         forcePlay ||
-        currentTime - lastAlarmTime >= ALARM_INTERVAL;
+        currentTime - lastAlarmTime >=
+            ALARM_INTERVAL;
 
     if (!canPlay) {
         return;
@@ -1017,25 +1342,15 @@ function playAlarm(forcePlay) {
 
     alarmAudio.play()
         .then(function () {
-
             lastAlarmTime = currentTime;
-
         })
-        .catch(function (error) {
-
-            console.warn(
-                "Alarm gagal diputar:",
-                error
-            );
-
+        .catch(function () {
             audioUnlocked = false;
-
             showAudioNotice();
         });
 }
 
 function stopAlarm() {
-
     currentAlarmStatus = false;
 
     alarmAudio.pause();
@@ -1043,46 +1358,39 @@ function stopAlarm() {
 }
 
 /* =====================================================
-   ERROR DAN EMPTY STATE
+   ERROR DAN EMPTY
 ===================================================== */
-
 function showError(message) {
-
     document.getElementById(
         "panelContainer"
     ).innerHTML = `
-        <div class="col-md-12">
+        <div class="sensor-message sensor-error">
 
-            <div class="sensor-message sensor-error">
+            <i class="fa fa-exclamation-circle"></i>
 
-                <h3>
-                    Gagal memuat data
-                </h3>
+            <h3>Gagal memuat data</h3>
 
-                <p>
-                    ${escapeHtml(message)}
-                </p>
-
-            </div>
+            <p>
+                ${escapeHtml(message)}
+            </p>
 
         </div>
     `;
 }
 
 function showEmptyData() {
-
     document.getElementById(
         "panelContainer"
     ).innerHTML = `
-        <div class="col-md-12">
+        <div class="sensor-message sensor-empty">
 
-            <div class="sensor-message sensor-empty">
+            <i class="fa fa-database"></i>
 
-                <h3>
-                    Data sensor belum tersedia
-                </h3>
+            <h3>Data sensor belum tersedia</h3>
 
-            </div>
+            <p>
+                Belum ada data terbaru dari perangkat.
+            </p>
 
         </div>
     `;
@@ -1091,17 +1399,13 @@ function showEmptyData() {
 /* =====================================================
    AUTO REFRESH
 ===================================================== */
-
 window.addEventListener("load", function () {
-
     loadData();
 
     window.setInterval(function () {
         loadData();
     }, REFRESH_INTERVAL);
-
 });
-
 </script>
 
 </body>
