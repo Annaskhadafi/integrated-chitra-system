@@ -4,7 +4,7 @@ require_once "koneksi.php";
 
 date_default_timezone_set('Asia/Makassar');
 
-header("Content-Type: application/json");
+header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, GET");
 header("Access-Control-Allow-Headers: Content-Type");
@@ -13,14 +13,19 @@ header("Access-Control-Allow-Headers: Content-Type");
 // CONFIG WA
 // ==========================
 
-// Gunakan API key yang sekarang Anda pakai.
-$apiKey = "MASUKKAN_API_KEY_ANDA";
+// WAJIB diganti dengan API key asli Anda.
+$apiKey = "09b3e08979d1474cb81c55c040744ca9";
 
-// Gunakan group ID yang sekarang Anda pakai.
-$groupId = "MASUKKAN_GROUP_ID_ANDA";
+// WAJIB diganti dengan group ID asli Anda.
+$groupId = "120363425240446101@g.us";
 
-// Cooldown notif WA = 1 jam
-$cooldownMinutes = 60;
+/*
+ * 0  = setiap data alarm langsung kirim WA.
+ * 60 = device yang sama hanya boleh kirim 1 kali per jam.
+ *
+ * Untuk testing Postman, gunakan 0.
+ */
+$cooldownMinutes = 0;
 
 // ==========================
 // FUNCTION KIRIM WA
@@ -31,7 +36,7 @@ function sendWhatsapp($message, $apiKey, $groupId)
         "apiKey"   => $apiKey,
         "id_group" => $groupId,
         "message"  => $message
-    ]);
+    ], JSON_UNESCAPED_UNICODE);
 
     $curl = curl_init();
 
@@ -39,6 +44,7 @@ function sendWhatsapp($message, $apiKey, $groupId)
         CURLOPT_URL => "http://103.82.92.181/api/sendMessageGroup",
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST => true,
+        CURLOPT_CONNECTTIMEOUT => 10,
         CURLOPT_TIMEOUT => 30,
         CURLOPT_POSTFIELDS => $payload,
         CURLOPT_HTTPHEADER => [
@@ -113,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         true
     );
 
-    if (!$data) {
+    if (!is_array($data)) {
         echo json_encode([
             "status" => "error",
             "message" => "No input data"
@@ -124,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     /*
      * Tetap mendukung temperature1 seperti kode lama.
-     * Juga mendukung nama temperature dari format baru.
+     * Juga mendukung temperature untuk dashboard baru.
      */
     $temperature1 =
         $data['temperature1'] ??
@@ -166,9 +172,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    /*
-     * Memastikan data sensor menjadi angka.
-     */
+    if (
+        !is_numeric($temperature1) ||
+        !is_numeric($temperature2) ||
+        !is_numeric($pressure)
+    ) {
+        echo json_encode([
+            "status" => "error",
+            "message" => "Temperature dan pressure harus berupa angka"
+        ]);
+
+        exit;
+    }
+
     $temperature1 = (float)$temperature1;
     $temperature2 = (float)$temperature2;
     $pressure = (float)$pressure;
@@ -176,18 +192,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // ==========================
     // STATUS TEMPERATURE 1
     // ==========================
-    /*
-     * Jika status_temp1 dikirim device,
-     * gunakan status dari device.
-     *
-     * Jika tidak dikirim, tetap gunakan
-     * perhitungan lama: temperature1 >= 140.
-     */
-    if (isset($data['status_temp1'])) {
+    if (array_key_exists('status_temp1', $data)) {
+
         $statusTemp1 = normalizeStatus(
             $data['status_temp1']
         );
+
     } else {
+
         $statusTemp1 =
             $temperature1 >= 140
                 ? 1
@@ -197,11 +209,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // ==========================
     // STATUS TEMPERATURE 2
     // ==========================
-    if (isset($data['status_temp2'])) {
+    if (array_key_exists('status_temp2', $data)) {
+
         $statusTemp2 = normalizeStatus(
             $data['status_temp2']
         );
+
     } else {
+
         $statusTemp2 =
             $temperature2 >= 140
                 ? 1
@@ -211,11 +226,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // ==========================
     // STATUS PRESSURE
     // ==========================
-    if (isset($data['status_pressure'])) {
+    if (array_key_exists('status_pressure', $data)) {
+
         $statusPressure = normalizeStatus(
             $data['status_pressure']
         );
+
     } else {
+
         $statusPressure =
             $pressure >= 32
                 ? 1
@@ -225,20 +243,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // ==========================
     // STATUS ALARM
     // ==========================
-    /*
-     * Mendukung status_alarm dari format baru.
-     * Mendukung alarm_status jika nama tersebut dikirim.
-     *
-     * Jika keduanya tidak dikirim, alarm tetap dihitung
-     * menggunakan status sensor seperti kode lama.
-     */
-    if (isset($data['status_alarm'])) {
+    if (array_key_exists('status_alarm', $data)) {
 
         $statusAlarm = normalizeStatus(
             $data['status_alarm']
         );
 
-    } elseif (isset($data['alarm_status'])) {
+    } elseif (array_key_exists('alarm_status', $data)) {
 
         $statusAlarm = normalizeStatus(
             $data['alarm_status']
@@ -258,10 +269,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // ==========================
     if (
         isset($data['status_overall']) &&
-        trim($data['status_overall']) !== ""
+        trim((string)$data['status_overall']) !== ""
     ) {
         $statusOverall = trim(
-            $data['status_overall']
+            (string)$data['status_overall']
         );
     } else {
         $statusOverall = createStatusOverall(
@@ -271,10 +282,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         );
     }
 
-    /*
-     * Membatasi panjang status_overall
-     * sesuai kolom VARCHAR(50).
-     */
     $statusOverall = substr(
         $statusOverall,
         0,
@@ -303,7 +310,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     /*
-     * Jika status_alarm aktif tetapi semua status sensor 0,
+     * Jika status alarm aktif tetapi semua status sensor 0,
      * alarm tetap dianggap critical.
      */
     if (
@@ -360,24 +367,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    /*
-     * d = double
-     * s = string
-     * i = integer
-     *
-     * Urutan:
-     * d temperature1
-     * d temperature2
-     * d pressure
-     * s unit
-     * s device_id
-     * s timestamp
-     * i alarm_status
-     * i status_pressure
-     * s status_overall
-     * i status_temp1
-     * i status_temp2
-     */
     $stmt->bind_param(
         "dddsssiisii",
         $temperature1,
@@ -400,66 +389,98 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->error
         ]);
 
+        $stmt->close();
         exit;
     }
 
     $lastId = $stmt->insert_id;
 
+    /*
+     * Nilai awal hasil proses WhatsApp.
+     * Nilai ini akan ikut ditampilkan di Postman.
+     */
+    $waAttempted = false;
+    $waSent = false;
+    $waStatus = "not_attempted";
+    $waHttpCode = null;
+    $waError = "";
+    $waResponse = "";
+    $waSkippedReason = "";
+
     // ==========================
-    // COOLDOWN WA
+    // PROSES WHATSAPP
     // ==========================
     if ($isCritical) {
 
         $allowSend = true;
 
-        $checkStmt = $koneksi->prepare("
-            SELECT timestamp
-            FROM sensor_data
-            WHERE device_id = ?
-            AND is_notified = 1
-            ORDER BY id DESC
-            LIMIT 1
-        ");
+        /*
+         * Cooldown hanya diperiksa jika nilainya lebih dari 0.
+         * Saat testing dengan cooldown 0, WA langsung dikirim.
+         */
+        if ($cooldownMinutes > 0) {
 
-        $checkStmt->bind_param(
-            "s",
-            $device_id
-        );
+            $checkStmt = $koneksi->prepare("
+                SELECT timestamp
+                FROM sensor_data
+                WHERE device_id = ?
+                AND is_notified = 1
+                ORDER BY id DESC
+                LIMIT 1
+            ");
 
-        $checkStmt->execute();
+            if ($checkStmt) {
 
-        $resultCheck =
-            $checkStmt->get_result();
+                $checkStmt->bind_param(
+                    "s",
+                    $device_id
+                );
 
-        if (
-            $rowCheck =
-                $resultCheck->fetch_assoc()
-        ) {
-            $lastNotifTime = strtotime(
-                $rowCheck['timestamp']
-            );
+                $checkStmt->execute();
 
-            $currentTime = time();
+                $resultCheck =
+                    $checkStmt->get_result();
 
-            $diffMinutes = (
-                $currentTime -
-                $lastNotifTime
-            ) / 60;
+                if (
+                    $rowCheck =
+                        $resultCheck->fetch_assoc()
+                ) {
+                    $lastNotifTime = strtotime(
+                        $rowCheck['timestamp']
+                    );
 
-            if (
-                $diffMinutes <
-                $cooldownMinutes
-            ) {
-                $allowSend = false;
+                    $currentTime = time();
+
+                    $diffMinutes = (
+                        $currentTime -
+                        $lastNotifTime
+                    ) / 60;
+
+                    if (
+                        $diffMinutes <
+                        $cooldownMinutes
+                    ) {
+                        $allowSend = false;
+
+                        $waStatus =
+                            "skipped";
+
+                        $waSkippedReason =
+                            "Device masih dalam cooldown notifikasi";
+                    }
+                }
+
+                $checkStmt->close();
             }
         }
-
-        $checkStmt->close();
 
         // ==========================
         // KIRIM WA
         // ==========================
         if ($allowSend) {
+
+            $waAttempted = true;
+            $waStatus = "processing";
 
             $statusText = implode(
                 " & ",
@@ -483,16 +504,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "\n";
 
             $msg .= "Temp 1    : " .
-                $temperature1 .
+                number_format(
+                    $temperature1,
+                    2,
+                    '.',
+                    ''
+                ) .
                 " °C\n";
 
             $msg .= "Temp 2    : " .
-                $temperature2 .
+                number_format(
+                    $temperature2,
+                    2,
+                    '.',
+                    ''
+                ) .
                 " °C\n";
 
             $msg .= "Pressure  : " .
-                $pressure .
+                number_format(
+                    $pressure,
+                    2,
+                    '.',
+                    ''
+                ) .
                 " psi\n";
+
+            $msg .= "Overall   : " .
+                strtoupper(
+                    str_replace(
+                        ["_", "-"],
+                        " ",
+                        $statusOverall
+                    )
+                ) .
+                "\n";
 
             $msg .= "Time      : " .
                 $timestamp;
@@ -503,20 +549,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $groupId
             );
 
+            $waHttpCode = $wa['httpcode'];
+            $waError = $wa['error'];
+            $waResponse = $wa['response'];
+
+            // ==========================
+            // LOG WA
+            // ==========================
             file_put_contents(
-                "log_wa.txt",
+                __DIR__ . "/log_wa.txt",
                 date("Y-m-d H:i:s")
                     . " | ID: " . $lastId
-                    . " | RESPONSE : "
-                    . json_encode($wa)
+                    . " | DEVICE: " . $device_id
+                    . " | HTTP: " . $waHttpCode
+                    . " | ERROR: " . $waError
+                    . " | RESPONSE: " . $waResponse
                     . PHP_EOL,
                 FILE_APPEND
             );
 
+            /*
+             * Anggap berhasil untuk seluruh kode HTTP 200-299.
+             */
             if (
-                empty($wa['error']) &&
-                $wa['httpcode'] == 200
+                empty($waError) &&
+                $waHttpCode >= 200 &&
+                $waHttpCode < 300
             ) {
+                $waSent = true;
+                $waStatus = "success";
+
                 $updateStmt =
                     $koneksi->prepare("
                         UPDATE sensor_data
@@ -524,16 +586,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         WHERE id = ?
                     ");
 
-                $updateStmt->bind_param(
-                    "i",
-                    $lastId
-                );
+                if ($updateStmt) {
 
-                $updateStmt->execute();
+                    $updateStmt->bind_param(
+                        "i",
+                        $lastId
+                    );
 
-                $updateStmt->close();
+                    $updateStmt->execute();
+
+                    $updateStmt->close();
+                }
+
+            } else {
+
+                $waStatus = "failed";
             }
         }
+
+    } else {
+
+        $waStatus = "not_required";
+        $waSkippedReason =
+            "Data sensor tidak dalam kondisi alarm";
     }
 
     // ==========================
@@ -543,17 +618,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         "status" => "success",
         "message" => "Data tersimpan",
 
-        /*
-         * Field lama tetap dipertahankan.
-         */
         "alarm_triggered" => $isCritical,
 
         /*
-         * Field tambahan.
+         * Hasil pengiriman WhatsApp.
          */
+        "whatsapp" => [
+            "attempted" => $waAttempted,
+            "sent" => $waSent,
+            "status" => $waStatus,
+            "http_code" => $waHttpCode,
+            "error" => $waError,
+            "response" => $waResponse,
+            "skipped_reason" => $waSkippedReason
+        ],
+
         "data" => [
-            "device_id" => $device_id,
-            "unit" => $unit,
+            "id" => $lastId,
+
+            "device_id" =>
+                $device_id,
+
+            "unit" =>
+                $unit,
 
             "temperature" =>
                 $temperature1,
@@ -588,7 +675,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "timestamp" =>
                 $timestamp
         ]
-    ]);
+    ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 
     $stmt->close();
     $koneksi->close();
@@ -602,8 +689,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     /*
-     * Query ini tetap sama:
-     * mengambil data terakhir setiap device.
+     * Mengambil data terakhir dari setiap device.
      */
     $query = "
         SELECT sd.*
@@ -631,7 +717,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if (!$result) {
         echo json_encode([
             "status" => "error",
-            "message" => "Query gagal"
+            "message" => "Query gagal: " .
+                $koneksi->error
         ]);
 
         exit;
@@ -643,9 +730,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $row =
             $result->fetch_assoc()
     ) {
-        /*
-         * Status dari database.
-         */
         $statusPressure =
             isset($row['status_pressure'])
                 ? (int)$row['status_pressure']
@@ -662,11 +746,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 : 0;
 
         /*
-         * Perhitungan lama tetap dipertahankan.
-         *
-         * Ini penting agar data lama yang statusnya masih 0
-         * tetapi nilainya sudah melewati batas tetap terbaca
-         * sebagai kondisi critical.
+         * Fallback rule lama.
          */
         if (
             (float)$row['temperature1'] >= 140
@@ -686,10 +766,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $statusPressure = 1;
         }
 
-        /*
-         * Alarm menggunakan data database.
-         * Namun perhitungan lama tetap menjadi fallback.
-         */
         $alarmStatus =
             isset($row['alarm_status'])
                 ? (int)$row['alarm_status']
@@ -703,24 +779,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $alarmStatus = 1;
         }
 
-        // ==========================
-        // STATUS TEXT LAMA
-        // ==========================
         $statusArr = [];
 
         if ($statusTemp1 === 1) {
-            $statusArr[] =
-                "OVERHEAT T1";
+            $statusArr[] = "OVERHEAT T1";
         }
 
         if ($statusTemp2 === 1) {
-            $statusArr[] =
-                "OVERHEAT T2";
+            $statusArr[] = "OVERHEAT T2";
         }
 
         if ($statusPressure === 1) {
-            $statusArr[] =
-                "OVER PRESS";
+            $statusArr[] = "OVER PRESS";
         }
 
         $statusText =
@@ -731,20 +801,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     $statusArr
                 );
 
-        // ==========================
-        // STATUS OVERALL
-        // ==========================
         $statusOverall =
             isset($row['status_overall'])
                 ? trim($row['status_overall'])
                 : "";
 
-        /*
-         * Jika status overall kosong, buat otomatis.
-         *
-         * Jika status overall masih "normal" tetapi nilai lama
-         * sudah critical, status overall juga dibuat ulang.
-         */
         if (
             $statusOverall === "" ||
             (
@@ -768,21 +829,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             "device_id" =>
                 $row['device_id'],
 
-            /*
-             * Unit ditambahkan karena digunakan dashboard.
-             */
             "unit" =>
                 $row['unit'],
 
-            /*
-             * Field lama tetap ada.
-             */
             "temperature1" =>
                 (float)$row['temperature1'],
 
-            /*
-             * Field baru untuk halamansensor.php.
-             */
             "temperature" =>
                 (float)$row['temperature1'],
 
@@ -801,18 +853,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             "status_temp2" =>
                 $statusTemp2,
 
-            /*
-             * Field lama dipertahankan.
-             */
             "status_text" =>
                 $statusText,
 
             "alarm_status" =>
                 $alarmStatus,
 
-            /*
-             * Field tambahan yang dibaca dashboard.
-             */
             "status_alarm" =>
                 $alarmStatus,
 
@@ -828,7 +874,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         "status" => "success",
         "total_device" => count($data),
         "data" => $data
-    ]);
+    ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 
     $koneksi->close();
 
