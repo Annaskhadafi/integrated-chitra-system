@@ -1,0 +1,478 @@
+.ics-login-page {
+  background: #f0f4f9;
+  color: #172033;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  min-height: 100vh;
+}
+
+.ics-login-page,
+.ics-login-page * {
+  box-sizing: border-box;
+}
+
+.ics-login-shell {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 32px 16px;
+  width: 100%;
+}
+
+.ics-login-card {
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 28px 70px rgba(15, 23, 42, 0.14);
+  display: flex;
+  max-width: 980px;
+  min-height: 460px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.ics-login-brand {
+  background: #0a2e52;
+  color: #ffffff;
+  flex: 0 0 48%;
+  min-height: 460px;
+  overflow: hidden;
+  position: relative;
+}
+
+.ics-login-brand::before {
+  background: rgba(0, 0, 0, 0.4);
+  content: "";
+  inset: 0;
+  position: absolute;
+  z-index: 2;
+}
+
+.ics-login-brand-bg,
+.ics-login-brand-shade,
+.ics-login-brand-fade {
+  inset: 0;
+  position: absolute;
+}
+
+.ics-login-brand-bg {
+  background-image: url("../images/ban login.png");
+  background-position: center;
+  background-size: cover;
+  opacity: 0.5;
+  z-index: 1;
+}
+
+.ics-login-brand-shade {
+  background: linear-gradient(160deg, #0a2e52 0%, #0d5c9e 60%, #0e7ab5 100%);
+  z-index: 0;
+}
+
+.ics-login-brand-fade {
+  background: linear-gradient(to bottom, transparent 40%, rgba(5, 20, 40, 0.65) 100%);
+  z-index: 3;
+}
+
+.ics-login-brand-content {
+  --ics-login-company-info-gap: 22px;
+  --ics-login-list-divider-gap: 44px;
+  display: flex;
+  flex-direction: column;
+  min-height: 460px;
+  padding: 38px 42px;
+  position: relative;
+  z-index: 4;
+}
+
+.ics-login-logo-box {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.16);
+  display: inline-flex;
+  justify-content: center;
+  margin-bottom: 28px;
+  padding: 12px 18px;
+  width: max-content;
+}
+
+.ics-login-logo {
+  display: block;
+  height: 50px;
+  max-width: 220px;
+  object-fit: contain;
+  width: auto;
+}
+
+.ics-login-intro h1 {
+  color: #ffffff;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.22;
+  margin: 0 0 14px;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.55);
+}
+
+.ics-login-intro p {
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0 0 22px;
+  max-width: 460px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.52);
+}
+
+.ics-login-feature-list {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+  margin: 0 0 var(--ics-login-list-divider-gap);
+  padding: 0;
+}
+
+.ics-login-feature-list li {
+  align-items: center;
+  color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  font-size: 14px;
+  gap: 12px;
+  line-height: 1.35;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.52);
+}
+
+.ics-login-feature-list li::before {
+  background: #38d9a9;
+  border-radius: 999px;
+  content: "";
+  flex: 0 0 8px;
+  height: 8px;
+  width: 8px;
+}
+
+.ics-login-company {
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
+  margin-top: auto;
+  padding-top: var(--ics-login-company-info-gap);
+}
+
+.ics-login-company p {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 12px;
+  line-height: 1.65;
+  margin: 0;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
+}
+
+.ics-login-company strong {
+  color: rgba(255, 255, 255, 0.94);
+}
+
+.ics-login-company span {
+  color: rgba(255, 255, 255, 0.36);
+  display: block;
+  font-size: 12px;
+  margin-top: 12px;
+}
+
+.ics-login-form-panel {
+  align-items: center;
+  background: #fafcff;
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: center;
+  padding: 42px 42px;
+}
+
+.ics-login-form-wrap {
+  max-width: 430px;
+  width: 100%;
+}
+
+.ics-login-accent {
+  background: linear-gradient(90deg, #0d5c9e, #38b2ac);
+  border-radius: 999px;
+  height: 4px;
+  margin-bottom: 34px;
+  width: 56px;
+}
+
+.ics-login-form-wrap h2 {
+  color: #111827;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 10px;
+}
+
+.ics-login-subtitle {
+  color: #98a2b3;
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 0 0 32px;
+}
+
+.ics-login-form {
+  display: grid;
+  gap: 18px;
+}
+
+.ics-login-field {
+  display: grid;
+  gap: 10px;
+}
+
+.ics-login-field label {
+  color: #344054;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.ics-login-input-wrap {
+  position: relative;
+}
+
+.ics-login-input-wrap > .fa {
+  color: #98a2b3;
+  font-size: 17px;
+  left: 18px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+}
+
+.ics-login-input-wrap .form-control {
+  background: #ffffff;
+  border: 1px solid #dfe5ee;
+  border-radius: 14px;
+  box-shadow: none;
+  color: #1f2937;
+  font-size: 15px;
+  height: 52px;
+  line-height: 1.4;
+  padding: 16px 18px 16px 50px;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  width: 100%;
+}
+
+.ics-login-input-wrap .form-control:focus {
+  border-color: #0d5c9e;
+  box-shadow: 0 0 0 3px rgba(13, 92, 158, 0.12);
+  outline: none;
+}
+
+.ics-login-input-wrap .form-control::placeholder {
+  color: #8d98aa;
+}
+
+.ics-login-input-wrap .form-control:disabled {
+  background: #f2f4f7;
+  color: #98a2b3;
+  cursor: not-allowed;
+}
+
+.ics-login-password-toggle {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  color: #98a2b3;
+  display: inline-flex;
+  height: 38px;
+  justify-content: center;
+  padding: 0;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: color 0.18s ease, background-color 0.18s ease;
+  width: 38px;
+}
+
+.ics-login-password-toggle:hover,
+.ics-login-password-toggle:focus {
+  background: #eef4fb;
+  color: #0d5c9e;
+  outline: none;
+}
+
+.ics-login-password-toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.ics-login-input-wrap input[type="password"],
+.ics-login-input-wrap input#pwd {
+  padding-right: 54px;
+}
+
+.ics-login-alert {
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.55;
+  padding: 13px 15px;
+}
+
+.ics-login-alert strong {
+  display: block;
+  margin-bottom: 3px;
+}
+
+.ics-login-alert-danger {
+  background: #fff1f2;
+  border: 1px solid #fecaca;
+  color: #b42318;
+}
+
+.ics-login-submit {
+  background: linear-gradient(135deg, #0a2e52, #0d5c9e);
+  border: 0;
+  border-radius: 14px;
+  box-shadow: 0 14px 24px rgba(13, 92, 158, 0.18);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  height: 52px;
+  line-height: 1;
+  margin-top: 10px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+  width: 100%;
+}
+
+.ics-login-submit:hover,
+.ics-login-submit:focus {
+  box-shadow: 0 18px 30px rgba(13, 92, 158, 0.25);
+  color: #ffffff;
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.ics-login-submit:active {
+  transform: translateY(0);
+}
+
+.ics-login-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+  transform: none;
+}
+
+.ics-login-copyright {
+  color: #c5ceda;
+  font-size: 13px;
+  line-height: 1.4;
+  margin: 52px 0 0;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .ics-login-shell {
+    align-items: flex-start;
+    padding: 20px 14px;
+  }
+
+  .ics-login-card {
+    border-radius: 20px;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .ics-login-brand {
+    flex-basis: auto;
+    min-height: 360px;
+  }
+
+  .ics-login-brand-content {
+    min-height: 360px;
+    padding: 30px 28px;
+  }
+
+  .ics-login-form-panel {
+    padding: 34px 28px 38px;
+  }
+
+  .ics-login-accent {
+    margin-bottom: 28px;
+  }
+
+  .ics-login-copyright {
+    margin-top: 34px;
+  }
+}
+
+@media (max-width: 520px) {
+  .ics-login-shell {
+    padding: 0;
+  }
+
+  .ics-login-card {
+    border-radius: 0;
+    box-shadow: none;
+    min-height: 100vh;
+  }
+
+  .ics-login-brand {
+    min-height: 320px;
+  }
+
+  .ics-login-brand-content {
+    --ics-login-company-info-gap: 20px;
+    --ics-login-list-divider-gap: 34px;
+    min-height: 320px;
+    padding: 24px 20px;
+  }
+
+  .ics-login-logo-box {
+    border-radius: 14px;
+    margin-bottom: 20px;
+    padding: 10px 12px;
+  }
+
+  .ics-login-logo {
+    height: 42px;
+    max-width: 190px;
+  }
+
+  .ics-login-intro h1 {
+    font-size: 23px;
+  }
+
+  .ics-login-intro p {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .ics-login-feature-list {
+    gap: 10px;
+  }
+
+  .ics-login-feature-list li {
+    font-size: 14px;
+  }
+
+  .ics-login-company p {
+    font-size: 12px;
+  }
+
+  .ics-login-form-panel {
+    padding: 30px 20px 34px;
+  }
+
+  .ics-login-form-wrap h2 {
+    font-size: 28px;
+  }
+
+  .ics-login-subtitle {
+    font-size: 14px;
+    margin-bottom: 28px;
+  }
+
+  .ics-login-input-wrap .form-control,
+  .ics-login-submit {
+    border-radius: 14px;
+    height: 52px;
+  }
+}

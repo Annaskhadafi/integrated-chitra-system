@@ -1,8 +1,18 @@
 <?php 
     $idmining= $_POST['idmining'];
     include "koneksi.php";
-    $perintah = mysqli_query($koneksi2,"SELECT * from mining_company where id_mining=$idmining");
-    $data = mysqli_fetch_array($perintah);
+    $stmt1 = mysqli_prepare($koneksi2, "SELECT * from mining_company WHERE id_mining = ?");
+    mysqli_stmt_bind_param($stmt1, "i", $idmining);
+    mysqli_stmt_execute($stmt1);
+    $result1 = mysqli_stmt_get_result($stmt1);
+    /* $perintah = mysqli_query($koneksi2,"SELECT * from mining_company where id_mining=$idmining"); */
+    $data = mysqli_fetch_array($result1);
+    mysqli_stmt_close($stmt1);
+
+    if(!$data){
+	echo "<script>alert('Data tidak ditemukan'); history.go(-1);</script>";
+        exit;
+    }
     $tglupdate=$data['tgl_update'];
 ?>
 <div class="row">
@@ -34,9 +44,18 @@
                     <div class="row">
                         <!-- start accordion -->
                         <div class="accordion" id="accordion" role="tablist" aria-multiselectable="true">
-                            <?php $perintah = mysqli_query($koneksi2," SELECT * From customer_master a, site_master b WHERE a.id_customer_master=b.id_customer AND b.mining_company=$idmining and status='Active' ");
+			<?php 
+    /* $perintah = mysqli_query($koneksi2," SELECT * From customer_master a, site_master b WHERE a.id_customer_master=b.id_customer AND b.mining_company=$idmining and status='Active' "); */
+    $stmt2 = mysqli_prepare($koneksi2, "SELECT * from customer_master a, site_master b 
+					WHERE a.id_customer_master = b.id_customer
+						AND b.mining_company = ?
+						AND status = 'Active'
+					");
+				mysqli_stmt_bind_param($stmt2, "i", $idmining);
+    				mysqli_stmt_execute($stmt2);
+				$result2 = mysqli_stmt_get_result($stmt2);
                                 $no=1;
-                                while ($data = mysqli_fetch_array($perintah)) {
+                                while ($data = mysqli_fetch_array($result2)) {
                                     $idcust=$data['id_customer_master'];?>
                                     <div class="panel">
                                         <a class="panel-heading collapsed" role="tab" id="heading<?php echo $no;?>" data-toggle="collapse" data-parent="#accordion" href="#collapse<?php echo $no;?>" aria-expanded="false" aria-controls="collapse<?php echo $no;?>">
@@ -58,24 +77,43 @@
                                                       </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <?php 
-                                                            $perintah1 = mysqli_query($koneksi2,"SELECT 
-                                                                                                  d.tire_size,
-                                                                                                  SUM(a.unit_qty) AS unit,
-                                                                                                  SUM(a.unit_qty * d.tire_quantity) AS running,
-                                                                                                  MAX(a.rotasi) AS rotasi,
-                                                                                                  MAX(a.scrap) AS scrap,
-                                                                                                  round((MAX(a.rotasi) / NULLIF(MAX(a.scrap), 0)) * SUM(a.unit_qty * d.tire_quantity)) AS forecast,
-                                                                                                  MAX(d.category) AS category
-                                                                                                FROM fleet_list a
-                                                                                                JOIN site_master b ON a.id_site = b.id_site_master
-                                                                                                JOIN unit_master d ON a.id_unit = d.id_unit_master
-                                                                                                WHERE b.mining_company = $idmining
-                                                                                                  AND status = 'Active' 
-                                                                                                  AND id_customer = $idcust  
-                                                                                                GROUP BY d.tire_size
-                                                                                                ORDER BY d.tire_size");
-                                                            while($data1 = mysqli_fetch_array($perintah1)){
+				    <?php 
+				    
+					$stmt3 = mysqli_prepare($koneksi2, "SELECT d.tire_size, SUM(a.unit_qty) AS unit, 
+    					SUM(a.unit_qty * d.tire_quantity) AS running,
+   	 				MAX(a.rotasi) AS rotasi,
+    					MAX(a.scrap) AS scrap,
+    					round((MAX(a.rotasi) / NULLIF(MAX(a.scrap), 0)) * SUM(a.unit_qty * d.tire_quantity)) AS forecast,
+    					MAX(d.category) AS category
+    					FROM fleet_list a 
+    					JOIN site_master b ON a.id_site = b.id_site_master		
+    					JOIN unit_master d ON a.id_unit = d.id_unit_master
+    					WHERE b.mining_company = ?
+        					AND status = 'Active'
+        					AND id_customer = ?		
+    					GROUP BY d.tire_size	
+    					ORDER BY d.tire_size");
+			    	        mysqli_stmt_bind_param($stmt3, "ii", $idmining, $idcust);
+				    	mysqli_stmt_execute($stmt3);
+				    	$result3 = mysqli_stmt_get_result($stmt3);
+
+                                                            /* $perintah1 = mysqli_query($koneksi2,"SELECT  */
+                                                            /*                                       d.tire_size, */
+                                                            /*                                       SUM(a.unit_qty) AS unit, */
+                                                            /*                                       SUM(a.unit_qty * d.tire_quantity) AS running, */
+                                                            /*                                       MAX(a.rotasi) AS rotasi, */
+                                                            /*                                       MAX(a.scrap) AS scrap, */
+                                                            /*                                       round((MAX(a.rotasi) / NULLIF(MAX(a.scrap), 0)) * SUM(a.unit_qty * d.tire_quantity)) AS forecast, */
+                                                            /*                                       MAX(d.category) AS category */
+                                                            /*                                     FROM fleet_list a */
+                                                            /*                                     JOIN site_master b ON a.id_site = b.id_site_master */
+                                                            /*                                     JOIN unit_master d ON a.id_unit = d.id_unit_master */
+                                                            /*                                     WHERE b.mining_company = $idmining */
+                                                            /*                                       AND status = 'Active'  */
+                                                            /*                                       AND id_customer = $idcust   */
+                                                            /*                                     GROUP BY d.tire_size */
+                                                            /*                                     ORDER BY d.tire_size"); */
+                                                            while($data1 = mysqli_fetch_array($result3)){
                                                         ?>
                                                       <tr>
                                                         <td><?php echo $data1['tire_size']; ?></td>

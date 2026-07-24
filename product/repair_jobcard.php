@@ -4,7 +4,7 @@
   <?php 
     include "header.php"; // call sectionhead.php as library
   ?>
-  <body class="nav-md">
+  <body class="nav-md repair-jobcard-print-page">
     <div class="container body">
       <div class="main_container">
         <?php 
@@ -18,15 +18,31 @@
                     $perintah = mysqli_query($koneksi3, "SELECT * FROM work_order WHERE id_wo='$idwo'");
                     $data = mysqli_fetch_array($perintah);
                     $remark=$data['remark'];
-                    
+                    $printFileParts = array(
+                        $data['wo'] ?? '',
+                        $data['tire_sn'] ?? '',
+                        $data['customer'] ?? '',
+                        $data['site'] ?? ''
+                    );
+                    $printFileParts = array_map(function($value) {
+                        $value = preg_replace('/\s+/', ' ', trim((string) $value));
+                        return preg_replace('/[\/\\\\:*?"<>|]/', '', $value);
+                    }, $printFileParts);
+                    $printFileParts = array_filter($printFileParts, function($value) {
+                        return $value !== '';
+                    });
+                    $printFileName = implode('-', $printFileParts);
+                    if ($printFileName === '') {
+                        $printFileName = 'Repair Jobcard';
+                    }
                 ?>
             <div class="clearfix"></div>
             <div class="row">
               <div class="col">
                 <div class="x_panel">
-                  <div class="x_title" style="display: flex; justify-content: space-between; align-items: center;">
-                    <h2 style="margin: 0;">Repair Jobcard : <u><?php echo $data['wo']; ?></u></h2>
-                    <img src="images/cp_logo.png" alt="Logo" style="height: 60px;">
+                  <div class="x_title">
+                    <h2>Repair Jobcard : <u><?php echo $data['wo']; ?></u></h2>
+                    <img src="images/cp_logo.png" alt="Logo">
                   </div>
                   <div class="x_content">
                     <section class="content invoice">
@@ -34,9 +50,9 @@
                       <div class="row invoice-info">
                         <div class="col-sm-4 invoice-col">
                           <address>
-                            <table style="border-collapse: collapse;">
+                            <table>
                               <tr>
-                                <td><strong>Customer</strong></td>
+                                <td style="width: 100px;"><strong>Customer</strong></td>
                                 <td>: <?php echo $data['customer']; ?></td>
                               </tr>
                               <tr>
@@ -53,9 +69,9 @@
 
                         <div class="col-sm-4 invoice-col">
                           <address>
-                            <table style="border-collapse: collapse;">
+                            <table>
                               <tr>
-                                <td><strong>Tyre Brand</strong></td>
+                                <td style="width: 100px;"><strong>Tyre Brand</strong></td>
                                 <td>: <?php echo $data['brand']; ?></td>
                               </tr>
                               <tr>
@@ -76,17 +92,9 @@
 
                         <div class="col-sm-4 invoice-col">
                           <address>
-                            <table style="border-collapse: collapse;">
-                              <!--<tr>-->
-                              <!--  <td><strong>Received Date</strong></td>-->
-                              <!--  <td>: <?php echo $data['received_date']; ?></td>-->
-                              <!--</tr>-->
-                              <!--<tr>-->
-                              <!--  <td><strong>Inspection Date</strong></td>-->
-                              <!--  <td>: <?php echo $data['inspect_date']; ?></td>-->
-                              <!--</tr>-->
+                            <table>
                               <tr>
-                                <td><strong>Wo Date</strong></td>
+                                <td style="width: 110px;"><strong>Wo Date</strong></td>
                                 <td>: <?php echo $data['wo_date'];?></td>
                               </tr>
                               <tr>
@@ -112,13 +120,12 @@
                             </table>
                           </address>
                         </div>
-
                       </div>
                       <!-- /.row -->
 
                       <!-- Table row -->
                       <div class="row">
-                        <div class="  table">
+                        <div class="table-responsive" style="width: 100%;">
                             <?php
                                 $perintah1 = mysqli_query($koneksi3, "SELECT DISTINCT proseske FROM job WHERE wo='$idwo' ORDER BY proseske ASC");
                                 while($data1 = mysqli_fetch_array($perintah1)){
@@ -127,16 +134,16 @@
                                   <table class="table table-striped">
                                     <thead>
                                       <tr>
-                                        <th colspan="7" style="background: #eee;">Process #<?php echo $proseske_val; ?></th>
+                                        <th colspan="7" style="background: #f2f2f2; font-weight: bold; border: 1px solid #666;">Process #<?php echo $proseske_val; ?></th>
                                       </tr>
                                       <tr>
-                                        <th>Injuries</th>
-                                        <th>Date</th>
-                                        <th>Process</th>
-                                        <th>Material</th>
-                                        <th>Qty</th>
-                                        <th>Duration (Min)</th>
-                                        <th>Manpower</th>
+                                        <th style="width: 15%;">Injuries</th>
+                                        <th style="width: 12%;">Date</th>
+                                        <th style="width: 15%;">Process</th>
+                                        <th style="width: 25%;">Material</th>
+                                        <th style="width: 10%;">Qty</th>
+                                        <th style="width: 13%;">Duration (Min)</th>
+                                        <th style="width: 10%;">Manpower</th>
                                       </tr>
                                     </thead>
                                     <tbody>
@@ -174,7 +181,6 @@
                                                     $satuan[$kunci] = $smu ?? '';
                                                 } else if ($nama) {
                                                     $material[$kunci] .= ($material[$kunci] ? ", " : "") . $nama;
-                                                    // Typically keep the first unit or list them
                                                 }
                                             }
                                             
@@ -201,13 +207,13 @@
                                             <?php    
                                             }
                                         ?>
-                                        <tr>
+                                        <tr style="background-color: #fafafa;">
                                             <td></td>
                                             <td></td>
                                             <td></td>
                                             <td></td>
-                                            <td><strong>Total Duration</strong></td>
-                                            <td><?php echo number_format($total_time/60,2); ?></td>
+                                            <td style="text-align: right;"><strong>Total Duration:</strong></td>
+                                            <td><strong><?php echo number_format($total_time/60,2); ?></strong></td>
                                             <td><strong>Hours</strong></td>
                                         </tr> 
                                     </tbody>
@@ -216,50 +222,57 @@
                                 }
                             ?>
                         </div>
-                        <!-- /.col -->
                       </div>
                       <!-- /.row -->
 
-                      <div class="row">
-                        <!-- accepted payments column -->
-                        <div class="col-md-6">
+                      <!-- Footer Area -->
+                      <div class="repair-print-footer">
+                        <div class="repair-print-sign">
                           <p class="lead">Quality Check:</p>
-                            <div style="border: 1px solid #000; height: 80px; width: 100px;"></div>
-                            <p style="margin-top: 5px;">Sign</p>
+                          <div class="repair-sign-box"></div>
+                          <p style="margin-top: 5px; font-size: 11px;">Sign</p>
                         </div>
-                        <div class="col-md-3">
-
-                        </div>
-                        <div class="col-md-3">
-                            <table class="table table-striped">
+                        
+                        <div class="repair-print-material">
+                            <table class="table table-striped" style="margin: 0;">
                                 <thead>
                                     <tr>
-                                        <th>Material</th>
+                                        <th>Material Summary</th>
                                         <th>Qty</th>
                                         <th>Uom</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($material as $key => $value): ?>
-                                        <?php if (trim($value) !== ''): ?>
+                                    <?php 
+                                    $has_material = false;
+                                    foreach ($material as $key => $value): 
+                                        if (trim($value) !== ''): 
+                                            $has_material = true;
+                                    ?>
                                             <tr>
                                                 <td><?php echo htmlspecialchars($value); ?></td>
                                                 <td><?php echo htmlspecialchars($jmlh[$key] ?? 0); ?></td>
                                                 <td><?php echo htmlspecialchars($satuan[$key] ?? "-"); ?></td>
                                             </tr>
-                                        <?php endif; ?>
-                                    <?php endforeach; ?>
+                                    <?php 
+                                        endif; 
+                                    endforeach; 
+                                    if(!$has_material):
+                                    ?>
+                                        <tr>
+                                            <td colspan="3" style="text-align: center; color: #999;">No material used</td>
+                                        </tr>
+                                    <?php endif; ?>
                                 </tbody>
                             </table>
                         </div>
-                        <!-- /.col -->
                       </div>
                       <!-- /.row -->
 
-                      <!-- this row will not appear when printing -->
-                      <div class="row no-print">
-                        <div class=" ">
-                          <button class="btn btn-default" onclick="window.print();"><i class="fa fa-print"></i> Print</button>
+                      <!-- Tombol Print di Web Web Screen -->
+                      <div class="row no-print" style="margin-top: 20px;">
+                        <div class="col-xs-12">
+                          <button class="btn btn-default" onclick="printJobcard();"><i class="fa fa-print"></i> Print Jobcard</button>
                         </div>
                       </div>
                     </section>
@@ -270,28 +283,36 @@
           </div>
         </div>
         <!-- /page content -->
-
-        <!-- footer content -->
-        <footer>
-          <div class="pull-right">
-            F.RPR.REM.003.00
-          </div>
-          <div class="clearfix"></div>
-        </footer>
-        <!-- /footer content -->
       </div>
     </div>
 
-    <!-- jQuery -->
+    <!-- jQuery & Bootstrap -->
     <script src="../vendors/jquery/dist/jquery.min.js"></script>
-    <!-- Bootstrap -->
-   <script src="../vendors/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- FastClick -->
-    <script src="../vendors/fastclick/lib/fastclick.js"></script>
-    <!-- NProgress -->
-    <script src="../vendors/nprogress/nprogress.js"></script>
-
-    <!-- Custom Theme Scripts -->
+    <script src="../vendors/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../build/js/custom.min.js"></script>
+    <script>
+      var repairJobcardPrintTitle = <?php echo json_encode($printFileName); ?>;
+
+      function printJobcard() {
+        var originalTitle = document.title;
+        var titleRestored = false;
+
+        function restoreTitle() {
+          if (!titleRestored) {
+            document.title = originalTitle;
+            titleRestored = true;
+          }
+        }
+
+        document.title = repairJobcardPrintTitle;
+
+        if ('onafterprint' in window) {
+          window.addEventListener('afterprint', restoreTitle, { once: true });
+        }
+
+        window.print();
+        setTimeout(restoreTitle, 1000);
+      }
+    </script>
   </body>
 </html>

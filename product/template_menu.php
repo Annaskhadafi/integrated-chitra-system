@@ -10,100 +10,94 @@ if (!isset($_SESSION['username'])) {
     }
     exit;
 }
+
+$current_page = basename($_SERVER['PHP_SELF']); // Hasil: repair_halamanwo.php
+$current_loc = isset($_GET['loc']) ? trim((string) $_GET['loc']) : ''; // Hasil: CK-BIB (kalau ada)
+
+// 1. PINDAHAN QUERY: Ambil data user di awal supaya kita tau idsection-nya
+include_once "koneksi.php";
+$username = isset($_SESSION['username']) ? $_SESSION['username'] : "";
+$idsection = 0; // Default
+
+if ($username != "") {
+    $perintah = mysqli_query($koneksi, "SELECT * from user a, section b,department c where a.username='$username' and a.section=b.id_section and b.department=c.id_dept");
+    $user = mysqli_fetch_array($perintah);
+    if ($user) {
+        $level = isset($user['level']) ? $user['level'] : 0;
+        $id_dept = isset($user['id_department']) ? $user['id_department'] : 0;
+        $dept = isset($user['department']) ? $user['department'] : "";
+        $name = isset($user['name']) ? $user['name'] : "";
+        $idlogin = isset($user['id_user']) ? $user['id_user'] : 0;
+        $section = isset($user['section']) ? $user['section'] : "";
+        $idsection = isset($user['id_section']) ? $user['id_section'] : 0;
+        $idstoreloc = isset($user['id_storeloc']) ? $user['id_storeloc'] : 0;
+        
+        $lvl = $user['level'] ?? 0;
+        $level = $level ?? $lvl;
+        $username_display = $user['username'] ?? "User";
+    }
+}
 ?>
-<div class="col-md-3 left_col">
+
+<!-- 2. PENGAMAN CLASS CSS: Tambah 'is-repair-section' khusus section 3 -->
+<div class="col-md-3 left_col <?php echo ($idsection == 3) ? 'is-repair-section' : ''; ?>">
     <div class="left_col scroll-view">
-        <div class="navbar nav_title" style="border: 0;">
-            <a href="halamanics.php" class="site_title" style="font-size: 16px">
-                <span>
-                    <H2>Integrated Chitra System</H2>
-                </span>
-            </a>
-        </div>
-        <div class="clearfix">
-        </div>
-        <!-- menu profile quick info -->
-        <div class="profile">
-            <div class="profile_info">
-                <?php
-                include_once "koneksi.php";
-                $username = isset($_SESSION['username']) ? $_SESSION['username'] : "";
-
-                if ($username != "") {
-                    $perintah = mysqli_query($koneksi, "SELECT * from user a, section b,department c where a.username='$username' and a.section=b.id_section and b.department=c.id_dept");
-                    $user = mysqli_fetch_array($perintah);
-                    if ($user) {
-                        $level = isset($user['level']) ? $user['level'] : 0;
-                        $id_dept = isset($user['id_department']) ? $user['id_department'] : 0;
-                        $dept = isset($user['department']) ? $user['department'] : "";
-                        $name = isset($user['name']) ? $user['name'] : "";
-                        $idlogin = isset($user['id_user']) ? $user['id_user'] : 0;
-                        $section = isset($user['section']) ? $user['section'] : "";
-                        $idsection = isset($user['id_section']) ? $user['id_section'] : 0;
-                        $idstoreloc = isset($user['id_storeloc']) ? $user['id_storeloc'] : 0;
-                    }
-                } else {
-                    // Optional: Redirect to login if not logged in
-                    // header("Location: login.php");
-                    // exit;
-                    $user = null;
-                    $name = "";
-                }
-                ?>
-                <?php
-                if ($user) {
-                    $lvl = $user['level'] ?? 0;
-                    if ($lvl == 1) {
-                        echo "Admin";
-                    } elseif ($lvl == 2) {
-                        echo "Staff";
-                    } elseif ($lvl == 3) {
-                        echo "Managerial";
-                    } elseif ($lvl == 910) {
-                        echo "Super User";
-                    }
-
-                    // Pastikan variabel level dan idsection tetap menggunakan nilai yang sudah didapat
-                    $level = $level ?? $lvl;
-                    $idsection = $idsection ?? 0;
-
-                    $username_display = $user['username'] ?? "User";
-                    $idsite = $user['id_site'] ?? 0;
-                    $site = $user['site'] ?? "";
-                } else {
-                    // Optional: Redirect to login if not logged in
-                    header("Location: login.php");
-                    exit;
-                    $user = null;
-                    $name = "";
-                }
-                ?> <br>
-                <h2> [
-                    <u>
-                        <?php echo $username_display; ?>
-                    </u> ]
-                    <br>
-                    <br>
-                    <?php
-                    $bulan = isset($_GET['months']) ? $_GET['months'] : date('m');
-                    $tahun = isset($_GET['year']) ? $_GET['year'] : date('Y');
-                    $tahunini = date('Y');
-                    $bulanini = date('m');
-                    if ($bulan <= 12) {
-                        $nama_bulan = date("F", mktime(0, 0, 0, $bulan, 10));
-                    } else {
-                        $nama_bulan = "All months";
-                    } ?>
-                </h2>
+        
+        <?php if ($idsection == 3) { ?>
+            <!-- 3A. HEADER KHUSUS REPAIR (Desain Baru) -->
+            <div class="navbar nav_title" style="border: 0;">
+                <a href="halamanics.php" class="ics-brand">
+                    <div class="ics-brand-icon">
+                        <i class="fa fa-bar-chart"></i>
+                    </div>
+                    <span>Integrated Chitra System</span>
+                </a>
             </div>
-        </div>
-        <!-- /menu profile quick info -->
-        </br>
+            <div class="clearfix"></div>
+        <?php } else { ?>
+            <!-- 3B. HEADER LAMA (Untuk divisi lain) -->
+            <div class="navbar nav_title" style="border: 0;">
+                <a href="halamanics.php" class="site_title" style="font-size: 16px">
+                    <span><H2>Integrated Chitra System</H2></span>
+                </a>
+            </div>
+            <div class="clearfix"></div>
+
+            <!-- PROFILE BAWAAN (Disembunyikan dari anak Repair) -->
+            <div class="profile">
+                <div class="profile_info">
+                    <br>
+                    <h2> [ <u><?php echo $username_display; ?></u> ]
+                        <br><br>
+                        <?php
+                        $bulan = isset($_GET['months']) ? $_GET['months'] : date('m');
+                        $tahun = isset($_GET['year']) ? $_GET['year'] : date('Y');
+                        if ($bulan <= 12) {
+                            $nama_bulan = date("F", mktime(0, 0, 0, $bulan, 10));
+                        } else {
+                            $nama_bulan = "All months";
+                        } ?>
+                    </h2>
+                </div>
+            </div>
+            <br>
+        <?php } ?>
+
         <!-- sidebar menu -->
         <div id="sidebar-menu" class="main_menu_side hidden-print main_menu menu_fixed">
             <div class="menu_section">
-                <h3>__________________________
-                </h3>
+                <?php if ($idsection != 3) { ?>
+                    <!-- Garis pembatas lama untuk selain anak Repair -->
+                    <h3>__________________________</h3>
+                <?php } else { ?>
+                    <!-- TAMBAHAN MENU DASHBOARD (Khusus anak Repair Section 3) -->
+                    <ul class="nav side-menu">
+                        <li class="<?php echo ($current_page == 'halamanics.php') ? 'active current-page' : ''; ?>">
+                            <a href="halamanics.php"><i class="fa fa-th-large" style="margin-right: 8px;"></i> Dashboard</a>
+                        </li>
+                    </ul>
+                <?php } ?>
+
                 <?php
                 // level=1(adm),2(staff),3(managerial)
                 // dept=1(),2(Centserv),3(Sales),4(scm)
@@ -165,13 +159,27 @@ if (!isset($_SESSION['username'])) {
                                 </li>
                             </ul>
                         <?php
-                    } elseif ($idsection == 3) { ?>
+                    } elseif ($idsection == 3) { 
+                        // Cek apakah lagi di dalam menu Work Order
+                        $is_wo_page = ($current_page == 'repair_halamanwo.php');
+                        $is_all_wo_active = ($is_wo_page && $current_loc === '');
+                    ?>
                             <ul class="nav side-menu">
-                                <li><a>Tire Repair Jobcard<span class="fa fa-chevron-down"></span></a>
-                                    <ul class="nav child_menu">
-                                        <li><a>Work Order Update<span class="fa fa-chevron-down"></span></a>
-                                            <ul class="nav child_menu">
-                                                <li><a href="repair_halamanwo.php">All Work Order</a></li>
+                                <!-- Bikin parent menu mekar kalau lagi di halaman WO -->
+                                <li class="<?php echo $is_wo_page ? 'active' : ''; ?>">
+                                    <a>Tire Repair Jobcard<span class="fa fa-chevron-down"></span></a>
+                                    <ul class="nav child_menu" <?php echo $is_wo_page ? 'style="display: block;"' : ''; ?>>
+                                        
+                                        <!-- Bikin parent sub-menu mekar kalau lagi di halaman WO -->
+                                        <li class="<?php echo $is_wo_page ? 'active' : ''; ?>">
+                                            <a>Work Order Update<span class="fa fa-chevron-down"></span></a>
+                                            <ul class="nav child_menu" <?php echo $is_wo_page ? 'style="display: block;"' : ''; ?>>
+                                                
+                                                <!-- Logika highlight untuk "All Work Order" -->
+                                                <li class="<?php echo $is_all_wo_active ? 'current-page' : ''; ?>">
+                                                    <a href="repair_halamanwo.php" data-wo-menu-loc="">All Work Order</a>
+                                                </li>
+
                                                 <?php
                                                 $perintahI = mysqli_query($koneksi3, "SELECT DISTINCT(TRIM(store_loc)) AS store_loc
                                                                     FROM work_order
@@ -179,9 +187,13 @@ if (!isset($_SESSION['username'])) {
                                                                       AND TRIM(store_loc) <> ''
                                                                     ORDER BY store_loc;");
                                                 while ($dataI = mysqli_fetch_array($perintahI)) {
-                                                    $loc = $dataI['store_loc'];
+                                                    $loc = trim((string) $dataI['store_loc']);
+                                                    
+                                                    // Logika highlight per Site (misal CK-BIB)
+                                                    $is_this_loc_active = ($is_wo_page && $current_loc !== '' && strcasecmp($current_loc, $loc) === 0);
                                                 ?>
-                                                    <li><a href="repair_halamanwo.php?loc=<?php echo urlencode($loc); ?>">
+                                                    <li class="<?php echo $is_this_loc_active ? 'current-page' : ''; ?>">
+                                                        <a href="repair_halamanwo.php?loc=<?php echo urlencode($loc); ?>" data-wo-menu-loc="<?php echo htmlspecialchars($loc); ?>">
                                                             <?php echo htmlspecialchars($loc); ?> Work Order
                                                         </a>
                                                     </li>
@@ -192,14 +204,14 @@ if (!isset($_SESSION['username'])) {
                                         </li>
                                         <li><a>Raw Data Report<span class="fa fa-chevron-down"></span></a>
                                             <ul class="nav child_menu">
-                                                <li><a href="halamanjobdata.php">Repair Job Data</a></li>
-                                                <li><a href="halamanmaterialexpenditure.php">Material Expenditure</a></li>
-                                                <li><a href="halamanmaterialstock.php">Material Stock</a></li>
+                                                <li class="<?php echo ($current_page == 'repair_halamanjobdata.php') ? 'current-page' : ''; ?>"><a href="repair_halamanjobdata.php">Repair Job Data</a></li>
+                                                <li class="<?php echo ($current_page == 'repair_halamanmaterialexpenditure.php') ? 'current-page' : ''; ?>"><a href="repair_halamanmaterialexpenditure.php">Material Expenditure</a></li>
+                                                <li class="<?php echo ($current_page == 'repair_halamanmaterialstock.php') ? 'current-page' : ''; ?>"><a href="repair_halamanmaterialstock.php">Material Stock</a></li>
                                             </ul>
                                         </li>
                                     </ul>
                                 </li>
-                                <li><a href="https://workshop.chitraparatama.com/">Tire Repair Scheduling</a></li>
+                                <li class="<?php echo ($current_page == 'https://workshop.chitraparatama.com/') ? 'current-page' : ''; ?>"><a href="https://workshop.chitraparatama.com/">Tire Repair Scheduling</a></li>
                             </ul>
                         <?php
                     } elseif ($idsection == 4) { ?>
@@ -284,13 +296,18 @@ if (!isset($_SESSION['username'])) {
 
                             </ul>
                         <?php
-                    } elseif ($idsection == 3) { ?>
+                    } elseif ($idsection == 3) {
+                        $is_wo_page = ($current_page == 'repair_halamanwo.php');
+                        $is_all_wo_active = ($is_wo_page && $current_loc === '');
+                    ?>
                             <ul class="nav side-menu">
-                                <li><a> Tire Repair Jobcard<span class="fa fa-chevron-down"></span></a>
-                                    <ul class="nav child_menu">
-                                        <li><a>Work Order Update<span class="fa fa-chevron-down"></span></a>
-                                            <ul class="nav child_menu">
-                                                <li><a href="repair_halamanwo.php">All Work Order</a></li>
+                                <li class="<?php echo $is_wo_page ? 'active' : ''; ?>">
+                                    <a> Tire Repair Jobcard<span class="fa fa-chevron-down"></span></a>
+                                    <ul class="nav child_menu" <?php echo $is_wo_page ? 'style="display: block;"' : ''; ?>>
+                                        <li class="<?php echo $is_wo_page ? 'active' : ''; ?>">
+                                            <a>Work Order Update<span class="fa fa-chevron-down"></span></a>
+                                            <ul class="nav child_menu" <?php echo $is_wo_page ? 'style="display: block;"' : ''; ?>>
+                                                <li class="<?php echo $is_all_wo_active ? 'current-page' : ''; ?>"><a href="repair_halamanwo.php" data-wo-menu-loc="">All Work Order</a></li>
                                                 <?php
                                                 $perintahI = mysqli_query($koneksi3, "SELECT DISTINCT(TRIM(store_loc)) AS store_loc
                                                                     FROM work_order
@@ -298,9 +315,10 @@ if (!isset($_SESSION['username'])) {
                                                                       AND TRIM(store_loc) <> ''
                                                                     ORDER BY store_loc;");
                                                 while ($dataI = mysqli_fetch_array($perintahI)) {
-                                                    $loc = $dataI['store_loc'];
+                                                    $loc = trim((string) $dataI['store_loc']);
+                                                    $is_this_loc_active = ($is_wo_page && $current_loc !== '' && strcasecmp($current_loc, $loc) === 0);
                                                 ?>
-                                                    <li><a href="repair_halamanwo.php?loc=<?php echo urlencode($loc); ?>">
+                                                    <li class="<?php echo $is_this_loc_active ? 'current-page' : ''; ?>"><a href="repair_halamanwo.php?loc=<?php echo urlencode($loc); ?>" data-wo-menu-loc="<?php echo htmlspecialchars($loc); ?>">
                                                             <?php echo htmlspecialchars($loc); ?> Work Order
                                                         </a>
                                                     </li>
@@ -311,9 +329,9 @@ if (!isset($_SESSION['username'])) {
                                         </li>
                                         <li><a>Raw Data Report<span class="fa fa-chevron-down"></span></a>
                                             <ul class="nav child_menu">
-                                                <li><a href="halamanjobdata.php">Repair Job Data</a></li>
-                                                <li><a href="halamanmaterialexpenditure.php">Material Expenditure</a></li>
-                                                <li><a href="halamanmaterialstock.php">Material Stock</a></li>
+                                                <li><a href="repair_halamanjobdata.php">Repair Job Data</a></li>
+                                                <li><a href="repair_halamanmaterialexpenditure.php">Material Expenditure</a></li>
+                                                <li><a href="repair_halamanmaterialstock.php">Material Stock</a></li>
                                             </ul>
                                         </li>
                                     </ul>
@@ -439,13 +457,21 @@ if (!isset($_SESSION['username'])) {
                     <h3>__________________________</h3>
             </div>
         </div>
+        
         <!-- /Sidebar Menu-->
-        <!-- /menu footer buttons -->
         <div class="sidebar-footer hidden-small">
-            <a data-toggle="tooltip" data-placement="top" title="Logout" href="proses_logout.php">
-                <span class="glyphicon glyphicon-off" aria-hidden="true">
-                </span>
-            </a>
+            <?php if ($idsection == 3) { ?>
+                <!-- LOGOUT BARU KHUSUS REPAIR -->
+                <a href="proses_logout.php" title="Logout">
+                    <i class="fa fa-sign-out"></i>
+                    <span>Logout</span>
+                </a>
+            <?php } else { ?>
+                <!-- LOGOUT LAMA -->
+                <a data-toggle="tooltip" data-placement="top" title="Logout" href="proses_logout.php">
+                    <span class="glyphicon glyphicon-off" aria-hidden="true"></span>
+                </a>
+            <?php } ?>
         </div>
         <!-- /menu footer buttons -->
     </div>

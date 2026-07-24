@@ -1,7 +1,11 @@
 <?php
 include "koneksi.php";
 include "auth_check.php";
+include "csrf.php";
 
+if ($_SERVER['REQUEST_METHOD'] == 'POST'){
+	verify_request();
+}
 $item = $_POST['item'];
 if($item=='fleet'){
 	$idsite = $_POST['customer'];
@@ -10,21 +14,56 @@ if($item=='fleet'){
 	$rotasi = $_POST['rotasi'];
 	$scrap = $_POST['scrap'];
 	$segment = $_POST['segment'];
-    $date=date('Y-m-d');
+    	$date=date('Y-m-d');
 	$user=$_POST['name'];
-	$query = mysqli_query($koneksi2,"INSERT into fleet_list (id_site,id_unit,unit_qty,rotasi,scrap,segment,date,updateby) 
-		values ('$idsite','$unit','$qty','$rotasi','$scrap','$segment','$date','$user')");
-	echo"<script>
-		alert('Data submitted');
-		history.go(-1);
+
+	try {
+	$stmt = mysqli_prepare(
+		$koneksi2,
+		"INSERT INTO fleet_list (id_site, id_unit, unit_qty, rotasi, scrap, segment, date, updateby)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+		"
+	);
+	mysqli_stmt_bind_param($stmt, "iiisiiss", $idsite, $unit, $qty, $rotasi, $scrap, $segment, $date, $user);
+
+	mysqli_stmt_execute($stmt);
+	mysqli_stmt_close($stmt);
+	
+	echo "<script>
+    	alert('Data submitted');
+    	if (document.referrer) {
+        window.location.href = document.referrer;
+    	} else {
+        window.location.href = 'index.php'; 
+    	}
+	</script>";
+exit;
+
+
+	}catch (Exception $e){
+		echo "<script>alert('Ada masalah dalam penginputan data. Coba lagi');
+		if (document.referrer) {
+       		window.location.href = document.referrer;
+    		} else {
+        	window.location.href = 'index.php'; 
+    		}
+
 		</script>";
+		exit;
+	}
+	/* $query = mysqli_query($koneksi2,"INSERT into fleet_list (id_site,id_unit,unit_qty,rotasi,scrap,segment,date,updateby)  */
+	/* 	values ('$idsite','$unit','$qty','$rotasi','$scrap','$segment','$date','$user')"); */
+	/* echo"<script> */
+	/* 	alert('Data submitted'); */
+	/* 	history.go(-1); */
+	/* 	</script>"; */
 }
 elseif ($item=='user') {
     require_super_admin($koneksi);
     $name     = $_POST['name'];
     $username = $_POST['username'];
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT); // Hash password sebelum disimpan
-    $section  = $_POST['section'];
+    $section = $_POST['section'];
     $level    = $_POST['level'];
     
     // Insert dengan prepared statement
@@ -56,7 +95,7 @@ elseif ($item=='user') {
 }
 elseif ($item=='supply') {
     // Tangkap semua data dari form
-    $item       = trim($_POST['item']);
+    $item_post      = trim($_POST['item']);
     $customer   = intval($_POST['customer']);
     $supplier   = intval($_POST['supplier']);
     $brand      = trim($_POST['brand']);
@@ -66,7 +105,7 @@ elseif ($item=='supply') {
     $user       = intval($_POST['user']);
     
     // Validasi minimal
-    if ($item == "" || $customer == 0 || $supplier == 0 || $brand == "" || $size == "") {
+    if ($item_post == "" || $customer == 0 || $supplier == 0 || $brand == "" || $size == "") {
         die("Data tidak lengkap.");
     }
     
@@ -84,11 +123,32 @@ elseif ($item=='supply') {
     // echo "USER        : $user\n";
     // echo "</pre>";
     // exit; // stop sampai sini supaya tidak insert
-	$query = mysqli_query($koneksi8,"INSERT into allSupply (id_user,id_customer_master,supplier,brand,size,qty_supply,periode) 
-		values ('$user','$customer','$supplier','$brand','$size','$qty','$period')");
-	echo"<script>
+    
+    try {
+	    $stmt = mysqli_prepare(
+		    $koneksi8,
+		    "INSERT INTO allSupply (id_user, id_customer_master, supplier, brand, size, qty_supply, periode)
+		    VALUES (?, ?, ?, ?, ?, ?, ?)
+		    "
+	    );
+	    mysqli_stmt_bind_param($stmt, "iisssis", $user, $customer, $supplier, $brand, $size, $qty, $period);
+
+	    mysqli_stmt_execute($stmt);
+	    mysqli_stmt_close($stmt);
+	    echo"<script>
 		alert('Data submitted');
-        window.location.href='marketing_halamansupply.php';
+		history.go(-1);
 		</script>";
+	   exit;
+    }catch (Exception $e){
+		echo "<script>alert('Ada masalah dalam penginputan data. Coba lagi'); history.go(-1);</script>";
+		exit;
+	}
+	/* $query = mysqli_query($koneksi8,"INSERT into allSupply (id_user,id_customer_master,supplier,brand,size,qty_supply,periode)  */
+	/* 	values ('$user','$customer','$supplier','$brand','$size','$qty','$period')"); */
+	/* echo"<script> */
+	/* 	alert('Data submitted'); */
+	/*        window.location.href='marketing_halamansupply.php'; */
+	/* 	</script>"; */
 }
 ?>

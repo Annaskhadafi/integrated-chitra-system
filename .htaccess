@@ -22,3 +22,10 @@
     # 4. Blokir akses publik ke berkas log percobaan login (rate limit)
     RewriteRule (login_attempts\.json)$ - [F,L]
 </IfModule>
+
+
+# Clickjacking Protection
+<IfModule mod_headers.c>
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Content-Security-Policy "frame-ancestors 'self'"
+</IfModule>

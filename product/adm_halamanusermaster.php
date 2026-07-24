@@ -1,7 +1,11 @@
 <?php
 include_once "koneksi.php";
 include_once "auth_check.php";
+include_once "csrf.php";
 require_user_levels($koneksi, array(910)); // Hanya Super Admin
+
+
+$tab_id = enforce_single_tab();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -28,7 +32,9 @@ require_user_levels($koneksi, array(910)); // Hanya Super Admin
                 <div class="x_content">
                     <div class="col-md-11 col-sm-11 col-xs-11">
                         <!-- form penambahan user ICS -->
-                        <form  class="form-inline" role="form" action="tambahData.php" method="post">
+			<form  class="form-inline" role="form" action="tambahData.php" method="post">
+			<?php echo csrf_field(); ?>
+    			    <input type="hidden" name="tab_id" value="<?php echo htmlspecialchars($tab_id); ?>">
                             <input class="form-control" type = "hidden" name ="item" value="user">
                             <div class="form-group">
                                 <input class="form-control" type="text" name="name" placeholder="Name" required />
