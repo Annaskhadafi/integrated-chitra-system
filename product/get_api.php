@@ -114,6 +114,22 @@ function wo_repair()
     mysqli_close($koneksi3); 
     }
 
+    function all_work_repair() 
+    {
+      global $koneksi3;    
+      $query = $koneksi3->query("SELECT * FROM work_order");            
+      while($row=mysqli_fetch_object($query))
+      {
+         $data[] =$row;
+      }
+      $response=array(
+                     'data' => $data
+                  );
+      header('Content-Type: application/json');
+      echo json_encode($response);
+    mysqli_close($koneksi3); 
+    }
+
 
 function repair_work_order_detail_material() 
 {
