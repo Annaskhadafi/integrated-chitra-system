@@ -24,8 +24,23 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     mbstring \
     xml
 
-# Enable Apache mod_rewrite
-RUN a2enmod rewrite
+# Enable Apache mod_rewrite and mod_headers (for clickjacking protection)
+RUN a2enmod rewrite headers
+
+RUN echo "ServerTokens Prod" >> /etc/apache2/apache2.conf \
+    && echo "ServerSignature Off" >> /etc/apache2/apache2.conf
+
+
+# ==========================================
+# ADD SECURITY CONFIGURATION HERE
+# ==========================================
+# Copy the security headers file and enable it
+COPY security-headers.conf /etc/apache2/conf-available/security-headers.conf
+RUN a2enconf security-headers
+# ==========================================
+
+# Sembunyikan versi PHP dari HTTP Response Header
+RUN echo "expose_php = Off" > /usr/local/etc/php/conf.d/disable-expose-php.ini
 
 # Configure Apache to allow .htaccess and set DocumentRoot
 # We keep DocumentRoot at /var/www/html, which corresponds to the project root.

@@ -1,8 +1,14 @@
 <?php 
 include "koneksi.php";
 include "auth_check.php";
+include "csrf.php";
 require_super_admin($koneksi);
 
+$tab_id = enforce_single_tab();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf();
+}
 // Amankan input
 $iduser = isset($_POST['iduser']) ? intval($_POST['iduser']) : 0;
 
@@ -17,6 +23,8 @@ $datamodal = mysqli_fetch_array($query);
 
 <!-- Form Edit Data User -->
 <form action="updateuser.php" method="post">
+  <?php echo csrf_field(); ?>
+  <input type="hidden" name="tab_id" value="<?php echo htmlspecialchars($tab_id); ?>">
   <input type="hidden" name="id_user" value="<?php echo $datamodal['id_user']; ?>">
 
   <div class="form-group">

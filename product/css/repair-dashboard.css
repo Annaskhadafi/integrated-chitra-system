@@ -1,0 +1,518 @@
+/* Repair dashboard: halamanics.php */
+.repair-dashboard {
+    color: #172033;
+}
+
+.repair-dashboard .repair-card {
+    background: #fff;
+    border: 1px solid #e8ecf2;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    margin-bottom: 18px;
+    overflow: hidden;
+}
+
+.repair-dashboard .repair-card-header {
+    align-items: flex-start;
+    border-bottom: 1px solid #eef1f5;
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 22px 16px;
+}
+
+.repair-dashboard .repair-card-title {
+    color: #071b35;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0 0 6px;
+}
+
+.repair-dashboard .repair-card-subtitle {
+    color: #8a94a6;
+    font-size: 14px;
+    margin: 0;
+}
+
+.repair-dashboard .repair-view-all {
+    color: #008c7a;
+    font-weight: 600;
+    margin-top: 5px;
+    white-space: nowrap;
+}
+
+.repair-dashboard .repair-status-summary {
+    padding: 20px 22px 18px;
+}
+
+.repair-dashboard .repair-status-head {
+    align-items: flex-start;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.repair-dashboard .repair-status-total {
+    color: #8a94a6;
+    font-size: 14px;
+    margin-top: 9px;
+}
+
+.repair-dashboard .repair-status-grid {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-bottom: 20px;
+}
+
+.repair-dashboard .repair-status-box {
+    border: 1px solid;
+    border-radius: 12px;
+    padding: 17px 16px 15px;
+}
+
+.repair-dashboard .repair-status-box strong {
+    display: block;
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+.repair-dashboard .repair-status-box span {
+    display: block;
+    font-size: 14px;
+}
+
+.repair-dashboard .repair-status-box.waiting {
+    background: #fffbeb;
+    border-color: #fcd34d;
+    color: #d97706;
+}
+
+.repair-dashboard .repair-status-box.in-progress {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #005bea;
+}
+
+.repair-dashboard .repair-user-card {
+    background: linear-gradient(to right, #1e2d3d, #1a4a6b);
+    border-radius: 12px;
+    padding: 30px;
+}
+
+.repair-dashboard .repair-user-content {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    min-height: 126px;
+}
+
+.repair-dashboard .repair-user-intro {
+    min-width: 0;
+}
+
+.repair-dashboard .repair-user-greeting {
+    color: #8a94a6;
+    font-size: 14px;
+    line-height: 1.4;
+    margin: 0 0 8px;
+}
+
+.repair-dashboard .repair-user-name {
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0 0 6px;
+}
+
+.repair-dashboard .repair-user-subtitle {
+    color: #8a94a6;
+    font-size: 14px;
+    line-height: 1.4;
+    margin: 0;
+}
+
+@media (min-width: 640px) {
+    .repair-dashboard .repair-user-meta {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-style: solid;
+        border-width: 1px;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+}
+
+.repair-dashboard .repair-user-meta {
+    align-items: flex-start;
+    border-radius: 12px;
+    display: flex;
+    gap: 14px;
+    min-width: 344px;
+    padding: 18px 20px;
+}
+
+.repair-dashboard .repair-user-meta-dot {
+    border: 2px solid #5eead4;
+    border-radius: 999px;
+    flex: 0 0 auto;
+    height: 14px;
+    margin-top: 4px;
+    width: 14px;
+}
+
+.repair-dashboard .repair-user-meta-body {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+}
+
+.repair-dashboard .repair-user-meta-name {
+    color: #ffffff;
+    font-size: 14px;
+    line-height: 1.35;
+    margin: 0 0 2px;
+    overflow-wrap: anywhere;
+}
+
+.repair-dashboard .repair-user-meta-row {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: 82px minmax(0, 1fr);
+    line-height: 1.35;
+}
+
+.repair-dashboard .repair-user-meta-label {
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+.repair-dashboard .repair-user-meta-value {
+    color: #cbd5e1;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.repair-dashboard .repair-user-meta-value-email {
+    color: #5eead4;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.repair-dashboard .repair-status-box.complete {
+    background: #ecfdf3;
+    border-color: #bbf7d0;
+    color: #008f4f;
+}
+
+.repair-dashboard .repair-status-box.reject {
+    background: #fff1f2;
+    border-color: #fecaca;
+    color: #d31111;
+}
+
+.repair-dashboard .repair-stack-bar {
+    display: flex;
+    gap: 1px;
+    height: 10px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    border-radius: 999px;
+}
+
+.repair-dashboard .repair-stack-segment {
+    min-width: 0;
+}
+
+.repair-dashboard .repair-stack-segment.is-empty {
+    background: #edf1f5;
+    width: 100%;
+}
+
+.repair-dashboard .repair-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+}
+
+.repair-dashboard .repair-legend-item {
+    align-items: center;
+    color: #8a94a6;
+    display: inline-flex;
+    font-size: 14px;
+    gap: 8px;
+}
+
+.repair-dashboard .repair-legend-dot {
+    border-radius: 999px;
+    display: inline-block;
+    height: 10px;
+    width: 10px;
+}
+
+.repair-dashboard .repair-chart-card {
+    padding: 20px 22px 16px;
+}
+
+.repair-dashboard .repair-chart-head {
+    align-items: flex-start;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.repair-dashboard .repair-chart-pill {
+    border-radius: 999px;
+    display: inline-block;
+    font-size: 13px;
+    padding: 6px 12px;
+    white-space: nowrap;
+}
+
+.repair-dashboard .pill-blue {
+    background: #eff6ff;
+    color: #005bea;
+}
+
+.repair-dashboard .pill-green {
+    background: #ecfdf3;
+    color: #008f4f;
+}
+
+.repair-dashboard .repair-chart-wrap {
+    height: 205px;
+    position: relative;
+}
+
+.repair-dashboard .repair-table {
+    margin: 0;
+}
+
+.repair-dashboard .repair-table>thead>tr>th {
+    background: #fafbfc;
+    border-bottom: 1px solid #eef1f5;
+    color: #8a94a6;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 13px 22px;
+}
+
+.repair-dashboard .repair-table>tbody>tr>td {
+    border-top: 1px solid #f2f4f7;
+    color: #172033;
+    padding: 13px 22px;
+    vertical-align: middle;
+}
+
+.repair-dashboard .repair-wo-cell {
+    align-items: center;
+    display: flex;
+    gap: 10px;
+}
+
+.repair-dashboard .repair-wo-icon {
+    align-items: center;
+    background: #f2f5f9;
+    border-radius: 8px;
+    color: #6f8197;
+    display: inline-flex;
+    height: 32px;
+    justify-content: center;
+    width: 32px;
+}
+
+.repair-dashboard .repair-wo-number-stack {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.repair-dashboard .repair-wo-missing {
+    display: inline-flex;
+    align-items: center;
+    width: max-content;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #fff4d6;
+    color: #a86600;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.repair-dashboard .repair-wo-ref {
+    color: #8a94a6;
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+.repair-dashboard .repair-muted {
+    color: #8a94a6;
+}
+
+.repair-dashboard .repair-status-badge {
+    border-radius: 999px;
+    display: inline-block;
+    font-size: 14px;
+    line-height: 1;
+    padding: 7px 12px;
+    white-space: nowrap;
+}
+
+.repair-dashboard .repair-status-complete {
+    background: #d9f8e7;
+    color: #008f4f;
+}
+
+.repair-dashboard .repair-status-progress {
+    background: #d9eaff;
+    color: #0b63d8;
+}
+
+.repair-dashboard .repair-status-waiting {
+    background: #fff0c4;
+    color: #c76a00;
+}
+
+.repair-dashboard .repair-status-reject {
+    background: #ffd8d8;
+    color: #d31111;
+}
+
+.repair-dashboard .repair-status-default {
+    background: #edf1f5;
+    color: #607084;
+}
+
+.repair-dashboard .repair-detail-link {
+    color: #9aa5b3;
+    font-size: 16px;
+}
+
+.repair-dashboard .repair-detail-empty {
+    color: #cbd5e1;
+    display: inline-block;
+    font-size: 14px;
+    min-width: 16px;
+}
+
+.repair-dashboard .repair-shortcuts {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 16px;
+}
+
+.repair-dashboard .repair-shortcut {
+    border: 1px solid;
+    border-radius: 8px;
+    display: block;
+    min-height: 120px;
+    padding: 20px 16px;
+}
+
+.repair-dashboard .repair-shortcut:hover {
+    text-decoration: none;
+}
+
+.repair-dashboard .repair-shortcut i {
+    display: block;
+    font-size: 22px;
+    margin-bottom: 18px;
+}
+
+.repair-dashboard .repair-shortcut strong {
+    display: block;
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+
+.repair-dashboard .repair-shortcut span {
+    display: block;
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.repair-dashboard .shortcut-blue {
+    background: #eff6ff;
+    border-color: #dbeafe;
+    color: #2563eb;
+}
+
+.repair-dashboard .shortcut-purple {
+    background: #faf5ff;
+    border-color: #f3e8ff;
+    color: #9333ea;
+}
+
+.repair-dashboard .shortcut-orange {
+    background: #fff7ed;
+    border-color: #fed7aa;
+    color: #ea580c;
+}
+
+.repair-dashboard .shortcut-green {
+    background: #f0fdf4;
+    border-color: #dcfce7;
+    color: #16a34a;
+}
+
+.repair-dashboard .repair-empty {
+    color: #8a94a6;
+    padding: 24px 22px;
+}
+
+@media (max-width: 991px) {
+    .repair-dashboard .repair-status-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767px) {
+    .repair-dashboard .repair-card-header,
+    .repair-dashboard .repair-status-head,
+    .repair-dashboard .repair-chart-head,
+    .repair-dashboard .repair-user-content {
+        gap: 8px;
+    }
+
+    .repair-dashboard .repair-card-header {
+        display: block;
+    }
+
+    .repair-dashboard .repair-view-all {
+        display: inline-block;
+        margin-top: 10px;
+    }
+
+    .repair-dashboard .repair-status-grid,
+    .repair-dashboard .repair-shortcuts {
+        grid-template-columns: 1fr;
+    }
+
+    .repair-dashboard .repair-user-content {
+        display: block;
+        min-height: 0;
+    }
+
+    .repair-dashboard .repair-user-meta {
+        margin-top: 16px;
+        min-width: 0;
+        padding: 16px;
+    }
+
+    .repair-dashboard .repair-user-meta-row {
+        grid-template-columns: 82px minmax(0, 1fr);
+    }
+
+    .repair-dashboard .repair-table-responsive {
+        overflow-x: auto;
+    }
+
+    .repair-dashboard .repair-table {
+        min-width: 720px;
+    }
+}

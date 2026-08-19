@@ -3,6 +3,8 @@
 // ==============================
 // DEBUG
 // ==============================
+// Aktifkan selama testing.
+// Setelah produksi, ubah display_errors menjadi 0.
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -11,32 +13,64 @@ ini_set('display_errors', 1);
 // ==============================
 include "koneksi.php";
 
+/*
+ * Pastikan file koneksi.php membuat variabel:
+ *
+ * $koneksi
+ */
+if (
+    !isset($koneksi) ||
+    !($koneksi instanceof mysqli)
+) {
+    die("Koneksi database tidak tersedia.");
+}
+
 // ==============================
 // CONFIG WA
 // ==============================
+// Isi menggunakan API key dan group ID asli
+// yang sama seperti di api_dummy.php.
 $apiKey = "09b3e08979d1474cb81c55c040744ca9";
 $groupId = "120363425240446101@g.us";
 
 // ==============================
 // QUERY DATA SENSOR ALARM
-// RULE:
-// TEMP >= 140
+// ==============================
+// Mengambil maksimal 20 data alarm yang:
+// 1. Belum berhasil dikirim ke WhatsApp.
+// 2. Memiliki salah satu status alarm aktif.
+//
+// Fallback lama tetap dipertahankan:
+// TEMP 1 >= 140
+// TEMP 2 >= 140
 // PRESSURE >= 32
 // ==============================
 $query = "
-SELECT 
+SELECT
     id,
     device_id,
-    temperature,
-    pressure,
     unit,
-    timestamp
+    timestamp,
+    is_notified,
+    alarm_status,
+    pressure,
+    status_pressure,
+    status_overall,
+    temperature1,
+    status_temp1,
+    temperature2,
+    status_temp2
 FROM sensor_data
 WHERE
     is_notified = 0
 AND
 (
-    temperature >= 140
+    alarm_status = 1
+    OR status_pressure = 1
+    OR status_temp1 = 1
+    OR status_temp2 = 1
+    OR temperature1 >= 140
+    OR temperature2 >= 140
     OR pressure >= 32
 )
 ORDER BY id ASC
@@ -46,78 +80,255 @@ LIMIT 20
 // ==============================
 // EKSEKUSI QUERY
 // ==============================
-$perintah = mysqli_query($koneksi, $query);
+$perintah = mysqli_query(
+    $koneksi,
+    $query
+);
 
-if(!$perintah){
-    die("Query Error : " . mysqli_error($koneksi));
+if (!$perintah) {
+    die(
+        "Query Error : " .
+        mysqli_error($koneksi)
+    );
 }
 
 // ==============================
-// ARRAY PESAN
+// ARRAY PESAN DAN ID
 // ==============================
-$list_pesan = [];
+$listPesan = [];
+$listId = [];
 
 // ==============================
 // LOOP DATA
 // ==============================
-if(mysqli_num_rows($perintah) > 0){
+if (mysqli_num_rows($perintah) > 0) {
 
-    while($data = mysqli_fetch_assoc($perintah)){
+    while (
+        $data = mysqli_fetch_assoc($perintah)
+    ) {
 
-        $id         = $data['id'];
-        $device_id  = $data['device_id'];
-        $temp       = $data['temperature'];
-        $pressure   = $data['pressure'];
-        $unit       = $data['unit'];
-        $timestamp  = $data['timestamp'];
+        $id = (int)$data['id'];
 
-        $status = [];
+        $deviceId = $data['device_id'];
+        $unit = $data['unit'];
+        $timestamp = $data['timestamp'];
+
+        $temperature1 =
+            (float)$data['temperature1'];
+
+        $temperature2 =
+            (float)$data['temperature2'];
+
+        $pressure =
+            (float)$data['pressure'];
 
         // ==============================
-        // RULE ALARM
+        // STATUS DARI DATABASE
         // ==============================
-        if($temp >= 140){
-            $status[] = "OVERHEAT";
+        $statusTemp1 =
+            (int)$data['status_temp1'];
+
+        $statusTemp2 =
+            (int)$data['status_temp2'];
+
+        $statusPressure =
+            (int)$data['status_pressure'];
+
+        $alarmStatus =
+            (int)$data['alarm_status'];
+
+        $statusOverall =
+            isset($data['status_overall'])
+                ? trim($data['status_overall'])
+                : "";
+
+        // ==============================
+        // FALLBACK RULE LAMA
+        // ==============================
+        if ($temperature1 >= 140) {
+            $statusTemp1 = 1;
         }
 
-        if($pressure >= 32){
+        if ($temperature2 >= 140) {
+            $statusTemp2 = 1;
+        }
+
+        if ($pressure >= 32) {
+            $statusPressure = 1;
+        }
+
+        if (
+            $statusTemp1 === 1 ||
+            $statusTemp2 === 1 ||
+            $statusPressure === 1
+        ) {
+            $alarmStatus = 1;
+        }
+
+        // ==============================
+        // SUSUN STATUS PESAN
+        // ==============================
+        $status = [];
+
+        if ($statusTemp1 === 1) {
+            $status[] = "OVERHEAT T1";
+        }
+
+        if ($statusTemp2 === 1) {
+            $status[] = "OVERHEAT T2";
+        }
+
+        if ($statusPressure === 1) {
             $status[] = "OVER PRESS";
         }
 
-        $statusText = implode(" & ", $status);
+        /*
+         * Jika alarm_status aktif tetapi tidak ada
+         * status sensor yang aktif.
+         */
+        if (
+            $alarmStatus === 1 &&
+            empty($status)
+        ) {
+            $status[] = "ALARM ACTIVE";
+        }
+
+        /*
+         * Query seharusnya hanya mengambil data alarm.
+         * Proteksi ini mencegah data normal ikut terkirim.
+         */
+        if (
+            $alarmStatus !== 1 &&
+            empty($status)
+        ) {
+            continue;
+        }
+
+        $statusText = implode(
+            " & ",
+            $status
+        );
+
+        // ==============================
+        // STATUS OVERALL
+        // ==============================
+        $isSensorCritical = (
+            $statusTemp1 === 1 ||
+            $statusTemp2 === 1 ||
+            $statusPressure === 1
+        );
+
+        /*
+         * Buat ulang status overall apabila kosong,
+         * atau masih normal padahal sensor critical.
+         */
+        if (
+            $statusOverall === "" ||
+            (
+                strtolower($statusOverall) === "normal" &&
+                $isSensorCritical
+            )
+        ) {
+            $overall = [];
+
+            if ($statusPressure === 1) {
+                $overall[] = "overpressure";
+            }
+
+            if ($statusTemp1 === 1) {
+                $overall[] = "overtemp1";
+            }
+
+            if ($statusTemp2 === 1) {
+                $overall[] = "overtemp2";
+            }
+
+            $statusOverall = empty($overall)
+                ? "normal"
+                : implode("_", $overall);
+        }
+
+        $overallText = strtoupper(
+            str_replace(
+                ["_", "-"],
+                " ",
+                $statusOverall
+            )
+        );
 
         // ==============================
         // FORMAT PESAN
         // ==============================
-        $msg  = "🚨 *ALARM INDUSTRIAL SENSOR*\n";
-        $msg .= "Device ID : " . $device_id . "\n";
-        $msg .= "Unit      : " . $unit . "\n";
-        $msg .= "Temp      : " . $temp . " °C\n";
-        $msg .= "Pressure  : " . $pressure . " psi\n";
-        $msg .= "Status    : *" . $statusText . "*\n";
-        $msg .= "Time      : " . $timestamp;
+        $message  = "🚨 *ALARM INDUSTRIAL SENSOR*\n";
+        $message .= "Device ID : " . $deviceId . "\n";
+        $message .= "Unit      : " . $unit . "\n";
 
-        $list_pesan[] = $msg;
+        $message .= "Temp 1    : " .
+            number_format(
+                $temperature1,
+                2,
+                '.',
+                ''
+            ) .
+            " °C\n";
 
-        // ==============================
-        // UPDATE AGAR TIDAK SPAM
-        // ==============================
-        mysqli_query($koneksi, "
-            UPDATE sensor_data
-            SET is_notified = 1
-            WHERE id = '$id'
-        ");
+        $message .= "Temp 2    : " .
+            number_format(
+                $temperature2,
+                2,
+                '.',
+                ''
+            ) .
+            " °C\n";
+
+        $message .= "Pressure  : " .
+            number_format(
+                $pressure,
+                2,
+                '.',
+                ''
+            ) .
+            " psi\n";
+
+        $message .= "Status    : *" .
+            $statusText .
+            "*\n";
+
+        $message .= "Overall   : *" .
+            $overallText .
+            "*\n";
+
+        $message .= "Time      : " .
+            $timestamp;
+
+        $listPesan[] = $message;
+        $listId[] = $id;
+
+        /*
+         * is_notified belum diubah di sini.
+         * Update dilakukan setelah WA benar-benar
+         * diterima oleh server WhatsApp.
+         */
     }
 }
 
 // ==============================
 // KIRIM WA
 // ==============================
-if(!empty($list_pesan)){
+if (!empty($listPesan)) {
 
-    $full_message  = "🔔 *MONITORING ALARM SENSOR*\n";
-    $full_message .= "Total Alarm : *" . count($list_pesan) . "*\n\n";
-    $full_message .= implode("\n\n-------------------\n\n", $list_pesan);
+    $fullMessage  =
+        "🔔 *MONITORING ALARM SENSOR*\n";
+
+    $fullMessage .=
+        "Total Alarm : *" .
+        count($listPesan) .
+        "*\n\n";
+
+    $fullMessage .= implode(
+        "\n\n-------------------\n\n",
+        $listPesan
+    );
 
     // ==============================
     // PAYLOAD JSON
@@ -125,55 +336,172 @@ if(!empty($list_pesan)){
     $dataToSend = [
         "apiKey"   => $apiKey,
         "id_group" => $groupId,
-        "message"  => $full_message
+        "message"  => $fullMessage
     ];
 
-    $jsonPayload = json_encode($dataToSend);
+    $jsonPayload = json_encode(
+        $dataToSend,
+        JSON_UNESCAPED_UNICODE
+    );
+
+    if ($jsonPayload === false) {
+        die(
+            "JSON Error : " .
+            json_last_error_msg()
+        );
+    }
 
     // ==============================
     // CURL
     // ==============================
     $curl = curl_init();
 
-    curl_setopt_array($curl, [
-        CURLOPT_URL => "http://103.82.92.181/api/sendMessageGroup",
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => $jsonPayload,
-        CURLOPT_HTTPHEADER => [
-            "Content-Type: application/json",
-            "Accept: application/json",
-            "Content-Length: " . strlen($jsonPayload)
-        ],
-    ]);
+    curl_setopt_array(
+        $curl,
+        [
+            CURLOPT_URL =>
+                "http://103.82.92.181/api/sendMessageGroup",
+
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+
+            /*
+             * Batas waktu koneksi dan keseluruhan request.
+             */
+            CURLOPT_CONNECTTIMEOUT => 10,
+            CURLOPT_TIMEOUT => 30,
+
+            CURLOPT_POSTFIELDS =>
+                $jsonPayload,
+
+            CURLOPT_HTTPHEADER => [
+                "Content-Type: application/json",
+                "Accept: application/json",
+                "Content-Length: " .
+                    strlen($jsonPayload)
+            ]
+        ]
+    );
 
     $response = curl_exec($curl);
 
+    $httpCode = curl_getinfo(
+        $curl,
+        CURLINFO_HTTP_CODE
+    );
+
+    $curlError = curl_error($curl);
+
     // ==============================
-    // DEBUG RESPONSE
+    // SIMPAN LOG PENGIRIMAN
     // ==============================
-    if(curl_errno($curl)){
+    file_put_contents(
+        __DIR__ . "/log_notifikasiwa.txt",
+        date("Y-m-d H:i:s") .
+        " | TOTAL: " .
+        count($listPesan) .
+        " | HTTP: " .
+        $httpCode .
+        " | ERROR: " .
+        $curlError .
+        " | RESPONSE: " .
+        $response .
+        PHP_EOL,
+        FILE_APPEND
+    );
 
-        echo "CURL ERROR : " . curl_error($curl);
+    // ==============================
+    // CEK HASIL PENGIRIMAN
+    // ==============================
+    if (!empty($curlError)) {
 
-    } else {
+        echo "STATUS PENGIRIMAN : GAGAL";
+        echo "<br>CURL ERROR : " .
+            htmlspecialchars($curlError);
 
-        echo "STATUS PENGIRIMAN : ";
+        /*
+         * is_notified tetap 0 supaya dapat
+         * dicoba lagi pada proses berikutnya.
+         */
+
+    } elseif (
+        $httpCode >= 200 &&
+        $httpCode < 300
+    ) {
+
+        echo "STATUS PENGIRIMAN : BERHASIL";
+        echo "<br>HTTP CODE : " .
+            $httpCode;
+
         echo "<pre>";
         print_r($response);
         echo "</pre>";
+
+        // ==============================
+        // UPDATE SETELAH WA BERHASIL
+        // ==============================
+        $updateStmt = $koneksi->prepare("
+            UPDATE sensor_data
+            SET is_notified = 1
+            WHERE id = ?
+        ");
+
+        if (!$updateStmt) {
+
+            echo "<br>UPDATE ERROR : " .
+                htmlspecialchars(
+                    $koneksi->error
+                );
+
+        } else {
+
+            foreach ($listId as $idSensor) {
+
+                $updateStmt->bind_param(
+                    "i",
+                    $idSensor
+                );
+
+                if (!$updateStmt->execute()) {
+
+                    echo "<br>Gagal update ID " .
+                        $idSensor .
+                        " : " .
+                        htmlspecialchars(
+                            $updateStmt->error
+                        );
+                }
+            }
+
+            $updateStmt->close();
+        }
+
+    } else {
+
+        echo "STATUS PENGIRIMAN : GAGAL";
+        echo "<br>HTTP CODE : " .
+            $httpCode;
+
+        echo "<pre>";
+        print_r($response);
+        echo "</pre>";
+
+        /*
+         * is_notified tetap 0 karena server WA
+         * mengembalikan kode di luar 200–299.
+         */
     }
 
     curl_close($curl);
 
 } else {
 
-    echo "Tidak ada alarm aktif.";
+    echo "Tidak ada alarm aktif yang belum dikirim.";
 }
 
 // ==============================
 // CLOSE DB
 // ==============================
-mysqli_close($koneksi3);
+mysqli_close($koneksi);
 
 ?>

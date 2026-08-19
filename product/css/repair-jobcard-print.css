@@ -1,0 +1,206 @@
+/* Repair jobcard print: repair_jobcard.php */
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 10mm 8mm;
+    }
+
+    html,
+    body.repair-jobcard-print-page {
+        width: 100% !important;
+        max-height: 275mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        background: #fff !important;
+        color: #000 !important;
+        font-family: Arial, sans-serif !important;
+        font-size: 11px !important;
+        line-height: 1.3 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .repair-jobcard-print-page .left_col,
+    .repair-jobcard-print-page .left_col.scroll-view,
+    .repair-jobcard-print-page .is-repair-section,
+    .repair-jobcard-print-page #sidebar-menu,
+    .repair-jobcard-print-page .main_menu_side,
+    .repair-jobcard-print-page .menu_fixed,
+    .repair-jobcard-print-page .nav_title,
+    .repair-jobcard-print-page .top_nav,
+    .repair-jobcard-print-page .nav_menu,
+    .repair-jobcard-print-page .sidebar-footer,
+    .repair-jobcard-print-page footer,
+    .repair-jobcard-print-page .no-print {
+        display: none !important;
+        visibility: hidden !important;
+        width: 0 !important;
+        min-width: 0 !important;
+        height: 0 !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        background: transparent !important;
+    }
+
+    .repair-jobcard-print-page,
+    .repair-jobcard-print-page .container,
+    .repair-jobcard-print-page .container.body,
+    .repair-jobcard-print-page .main_container {
+        position: static !important;
+        display: block !important;
+        left: auto !important;
+        right: auto !important;
+        top: auto !important;
+        min-height: 0 !important;
+        background: #fff !important;
+    }
+
+    body.nav-md.repair-jobcard-print-page .container.body .right_col,
+    body.nav-sm.repair-jobcard-print-page .container.body .right_col,
+    .repair-jobcard-print-page .main_container .top_nav,
+    .repair-jobcard-print-page .right_col {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        left: auto !important;
+        right: auto !important;
+    }
+
+    .repair-jobcard-print-page .container,
+    .repair-jobcard-print-page .container.body,
+    .repair-jobcard-print-page .main_container,
+    .repair-jobcard-print-page .right_col,
+    .repair-jobcard-print-page .row,
+    .repair-jobcard-print-page .col,
+    .repair-jobcard-print-page .x_panel,
+    .repair-jobcard-print-page .x_content,
+    .repair-jobcard-print-page .content.invoice {
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        float: none !important;
+        background: #fff !important;
+        box-shadow: none !important;
+    }
+
+    /* .repair-jobcard-print-page .content.invoice {
+        border: 1px solid #e5e7eb !important;
+        padding: 10mm 5mm 6mm !important;
+    } */
+
+    .repair-jobcard-print-page .x_title {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        margin: 0 0 10px !important;
+        padding: 0 0 9px !important;
+        border-bottom: 1px solid #d6dbe1 !important;
+    }
+
+    .repair-jobcard-print-page .x_title h2 {
+        margin: 0 !important;
+        font-size: 15px !important;
+        font-weight: 500 !important;
+    }
+
+    .repair-jobcard-print-page .x_title img {
+        height: 42px !important;
+    }
+
+    .repair-jobcard-print-page .invoice-info {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        width: 100% !important;
+        margin: 0 0 16px !important;
+    }
+
+    .repair-jobcard-print-page .invoice-info .invoice-col {
+        display: block !important;
+        width: 33.33% !important;
+        padding-right: 10px !important;
+        float: none !important;
+        vertical-align: top !important;
+    }
+
+    .repair-jobcard-print-page .invoice-info .invoice-col:nth-child(3) {
+        border-top: none !important;
+        padding-top: 0 !important;
+    }
+
+    .repair-jobcard-print-page .invoice-info table {
+        width: 100% !important;
+    }
+
+    .repair-jobcard-print-page .invoice-info td {
+        padding: 2px 0 !important;
+        line-height: 1.3 !important;
+    }
+
+    .repair-jobcard-print-page .table {
+        width: 100% !important;
+        margin-bottom: 20px !important;
+        border-collapse: collapse !important;
+        background: #fff !important;
+    }
+
+    .repair-jobcard-print-page .table>thead>tr>th,
+    .repair-jobcard-print-page .table>tbody>tr>td {
+        padding: 7px 8px !important;
+        font-size: 11px !important;
+        border: 0 !important;
+        border-bottom: 1px solid #d9d9d9 !important;
+        vertical-align: middle !important;
+    }
+
+    .repair-jobcard-print-page .table>thead>tr>th {
+        font-weight: bold !important;
+        background: #fff !important;
+        text-align: left !important;
+        border-bottom: 1px solid #d0d0d0 !important;
+    }
+
+    .repair-jobcard-print-page .table>thead>tr:first-child>th {
+        padding: 7px 8px 8px !important;
+        background: #fff !important;
+        border-top: 1px solid #d0d0d0 !important;
+        border-bottom: 1px solid #d0d0d0 !important;
+    }
+
+    .repair-jobcard-print-page .table>tbody>tr:last-child>td {
+        border-bottom: 1px solid #d9d9d9 !important;
+    }
+
+    .repair-jobcard-print-page .repair-print-footer {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: flex-start !important;
+        width: 100% !important;
+        margin-top: 25px !important;
+        page-break-after: avoid !important;
+    }
+
+    .repair-jobcard-print-page .repair-print-sign {
+        width: 35% !important;
+    }
+
+    .repair-jobcard-print-page .repair-print-material {
+        width: 55% !important;
+    }
+
+    .repair-jobcard-print-page .lead {
+        font-weight: bold !important;
+        font-size: 13px !important;
+        margin-bottom: 8px !important;
+    }
+
+    .repair-jobcard-print-page .repair-sign-box {
+        width: 120px !important;
+        height: 75px !important;
+        border: 1px solid #000 !important;
+        background: #fff !important;
+    }
+}
