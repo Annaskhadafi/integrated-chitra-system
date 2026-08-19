@@ -50,7 +50,7 @@ if ($username != "") {
                     <div class="ics-brand-icon">
                         <i class="fa fa-bar-chart"></i>
                     </div>
-                    <span>Integrated Chitra System</span>
+                    <span>Integrated Chitra Sistem</span>
                 </a>
             </div>
             <div class="clearfix"></div>
