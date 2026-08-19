@@ -86,10 +86,8 @@ $perintah = mysqli_query(
 );
 
 if (!$perintah) {
-    die(
-        "Query Error : " .
-        mysqli_error($koneksi)
-    );
+    error_log("Query Error in notifikasi_wa_controlpanel.php: " . mysqli_error($koneksi));
+    die("Terjadi kesalahan saat memproses data.");
 }
 
 // ==============================

@@ -85,8 +85,9 @@ elseif ($item=='user') {
             window.location.href = 'adm_halamanusermaster.php';
         </script>";
     } else {
+        error_log("Gagal menyimpan data user: " . mysqli_error($koneksi));
         echo "<script>
-            alert('Gagal menyimpan data: " . mysqli_error($koneksi) . "');
+            alert('Gagal menyimpan data. Silakan hubungi administrator.');
             window.history.back();
         </script>";
     }

@@ -283,7 +283,8 @@ $datasetsMaterial = buildDataset($temp_data_material, $labels, $material_info, $
                         $resSource = mysqli_query($koneksi, $querySource);
 
                         if (!$resSource) {
-                            echo "Error: " . mysqli_error($koneksi);
+                            error_log("Error fetching material source: " . mysqli_error($koneksi));
+                            echo "<p>Terjadi kesalahan saat memuat data sumber.</p>";
                         } elseif (mysqli_num_rows($resSource) == 0) {
                             echo "<p>Tidak ada data sumber tersedia.</p>";
                         } else {
