@@ -30,7 +30,7 @@ echo str_replace('</head>', '  <link href="css/login-redesign.css" rel="styleshe
           </div>
 
           <div class="ics-login-intro">
-            <h1>Integrated Chitra<br>System &mdash; (ICS)</h1>
+            <h1>Integrated Chitra<br>Sistem &mdash; (ICS)</h1>
             <p>Portal terpadu untuk manajemen work order, jadwal perawatan ban, dan laporan operasional perusahaan.</p>
           </div>
 
