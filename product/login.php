@@ -25,7 +25,7 @@ include "sectionhead.php"; // call sectionhead.php as library
       <section class="login_content">
         <!-- start form login -->
         <form role="form" action="proses_login.php" method="post">
-          <h3> Integrated Chitra System-ICS </h3>
+          <h3> Integrated Chitra System (ICS) </h3>
           <div class="form-group">
             <!-- form username dilempar dengan fungsi POST -->
             <input type="username" name="username" class="form-control" id="username" placeholder="Username" required <?php echo ($lockout_remaining > 0) ? 'disabled' : ''; ?>>
