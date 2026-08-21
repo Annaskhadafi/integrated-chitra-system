@@ -3,10 +3,8 @@
 // ==============================
 // DEBUG
 // ==============================
-// Aktifkan selama testing.
-// Setelah produksi, ubah display_errors menjadi 0.
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', '0');
 
 // ==============================
 // KONEKSI DATABASE
