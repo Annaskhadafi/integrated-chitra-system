@@ -1,4 +1,8 @@
-<?php session_start();?> <!-- tangkap nilai 'username' dan 'password' dari proseslogin -->
+<?php
+include_once "koneksi.php";
+include_once "auth_check.php";
+require_access($koneksi, array(), array(4));
+?> <!-- tangkap nilai 'username' dan 'password' dari proseslogin -->
 <!DOCTYPE html>
 <html lang="en">
 <?php include'header.php';?>

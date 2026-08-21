@@ -1,4 +1,8 @@
-<?php session_start();?>
+<?php
+include_once "koneksi.php";
+include_once "auth_check.php";
+require_access($koneksi, array(), array(4, 7));
+?>
 <!DOCTYPE html>
 <html lang="en">
 <?php include'header.php';?>
