@@ -42,6 +42,15 @@ RUN a2enconf security-headers
 # Sembunyikan versi PHP dari HTTP Response Header
 RUN echo "expose_php = Off" > /usr/local/etc/php/conf.d/disable-expose-php.ini
 
+# ==========================================
+# KONFIGURASI ERROR HANDLING & STACK TRACE (PENTEST FIX)
+# ==========================================
+RUN echo "display_errors = Off" > /usr/local/etc/php/conf.d/error-logging.ini \
+    && echo "display_startup_errors = Off" >> /usr/local/etc/php/conf.d/error-logging.ini \
+    && echo "log_errors = On" >> /usr/local/etc/php/conf.d/error-logging.ini \
+    && echo "error_log = /var/log/php_errors.log" >> /usr/local/etc/php/conf.d/error-logging.ini
+# ==========================================
+
 # Configure Apache to allow .htaccess and set DocumentRoot
 # We keep DocumentRoot at /var/www/html, which corresponds to the project root.
 RUN sed -i 's|/var/www/html|/var/www/html|g' /etc/apache2/sites-available/000-default.conf
