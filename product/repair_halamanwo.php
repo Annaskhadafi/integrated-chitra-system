@@ -169,6 +169,26 @@
                               $detailStatus = htmlspecialchars($status ?? '', ENT_QUOTES, 'UTF-8');
                               $detailStatusClass = htmlspecialchars($statusClass, ENT_QUOTES, 'UTF-8');
                               $detailId = htmlspecialchars($id_wo, ENT_QUOTES, 'UTF-8');
+                              $detailPdfFileParts = array(
+                                $data['wo'] ?? '',
+                                $data['tire_sn'] ?? '',
+                                $data['customer'] ?? '',
+                                $data['site'] ?? ''
+                              );
+                              $detailPdfFileParts = array_map(function($value) {
+                                $value = preg_replace('/\s+/', ' ', trim((string) $value));
+                                return preg_replace('/[\/\\\\:*?"<>|]/', '', $value);
+                              }, $detailPdfFileParts);
+                              $detailPdfFileParts = array_filter($detailPdfFileParts, function($value) {
+                                return $value !== '';
+                              });
+                              $detailPdfFilename = implode('-', $detailPdfFileParts);
+                              if ($detailPdfFilename === '') {
+                                $detailPdfFilename = 'Repair Jobcard';
+                              }
+                              $detailPdfFilename .= '.pdf';
+                              $detailPdfUrl = 'repair_jobcard_pdf.php/' . rawurlencode($detailPdfFilename) . '?id=' . urlencode($id_wo);
+                              $detailPdfUrlAttr = htmlspecialchars($detailPdfUrl, ENT_QUOTES, 'UTF-8');
                               $detailAttributes = 'data-detail-id="'.$detailId.'"'
                                 . ' data-detail-work-order="'.$detailWorkOrder.'"'
                                 . ' data-detail-size="'.$detailSize.'"'
@@ -188,6 +208,7 @@
                                 . ' data-detail-create-by="'.$detailCreateBy.'"'
                                 . ' data-detail-status="'.$detailStatus.'"'
                                 . ' data-detail-status-class="'.$detailStatusClass.'"'
+                                . ' data-detail-pdf-url="'.$detailPdfUrlAttr.'"'
                                 . ' data-detail-action="'.$detailAction.'"';
                               
                               // Collect modals
@@ -314,6 +335,9 @@
                                                     <i class="fa fa-pencil"></i>
                                                 </button>
                                                 <a href="repair_jobcard.php?id=<?php echo $data['id_wo']; ?>" class="btn btn-sm btn-primary">Detail</a>
+                                                <a href="<?php echo $detailPdfUrlAttr; ?>" target="_blank" rel="noopener" class="btn btn-sm btn-primary" title="Print PDF">
+                                                    <i class="fa fa-print"></i>
+                                                </a>
                                             </span>
                                         </td>               
                                 </tr>
@@ -456,6 +480,13 @@
 
         function detailActionHtml(rowData) {
           var id = escapeHtml(rowData.detailId);
+          var pdfUrl = rowData.detailPdfUrl || jobcardPdfUrl({
+            id_wo: rowData.detailId,
+            wo: rowData.detailWorkOrder,
+            tire_sn: rowData.detailSn,
+            customer: rowData.detailCustomer,
+            site: rowData.detailSite
+          });
 
           if (rowData.detailAction === 'complete') {
             return '' +
@@ -464,6 +495,9 @@
                   '<i class="fa fa-pencil"></i>' +
                 '</button>' +
                 '<a href="repair_jobcard.php?id=' + id + '" class="btn btn-sm btn-primary">Detail</a>' +
+                '<a href="' + escapeHtml(pdfUrl) + '" target="_blank" rel="noopener" class="btn btn-sm btn-primary" title="Print PDF">' +
+                  '<i class="fa fa-print"></i>' +
+                '</a>' +
               '</span>';
           }
 
@@ -590,6 +624,7 @@
                 detailCreateBy: data.createby,
                 detailStatus: data.status,
                 detailStatusClass: data.statusClass,
+                detailPdfUrl: jobcardPdfUrl(data),
                 detailAction: data.detailAction || 'progress'
               };
 
@@ -614,8 +649,23 @@
                 'data-detail-create-by': detailData.detailCreateBy,
                 'data-detail-status': detailData.detailStatus,
                 'data-detail-status-class': detailData.detailStatusClass,
+                'data-detail-pdf-url': detailData.detailPdfUrl,
                 'data-detail-action': detailData.detailAction
               });
+            }
+
+            function jobcardPdfFilename(data) {
+              var parts = [data.wo, data.tire_sn, data.customer, data.site].map(function(value) {
+                return (value || '').toString().replace(/\s+/g, ' ').trim().replace(/[\/\\:*?"<>|]/g, '');
+              }).filter(function(value) {
+                return value !== '';
+              });
+
+              return (parts.length ? parts.join('-') : 'Repair Jobcard') + '.pdf';
+            }
+
+            function jobcardPdfUrl(data) {
+              return 'repair_jobcard_pdf.php/' + encodeURIComponent(jobcardPdfFilename(data)) + '?id=' + encodeURIComponent(data.id_wo || '');
             }
 
             function updateInlineModal(data) {
@@ -694,6 +744,7 @@
                 }
 
                 updateSavedInlineRow($row, response);
+                alert(response.message || 'Data WO berhasil disimpan.');
               }).fail(function(xhr) {
                 var response = xhr.responseJSON || {};
                 alert(response.message || 'Gagal menyimpan WO.');
