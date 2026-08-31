@@ -60,7 +60,8 @@ foreach ($period as $periode) {
         }
     } else {
         // Menangani kesalahan query
-        echo "Error: " . mysqli_error($koneksi);
+        error_log("Query error in prediksi.php: " . mysqli_error($koneksi));
+        echo "<p>Terjadi kesalahan saat memproses data prediksi.</p>";
     }
 }
 // print_r($datatopredict);

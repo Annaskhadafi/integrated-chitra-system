@@ -3,10 +3,8 @@
 // ==============================
 // DEBUG
 // ==============================
-// Aktifkan selama testing.
-// Setelah produksi, ubah display_errors menjadi 0.
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', '0');
 
 // ==============================
 // KONEKSI DATABASE
@@ -86,10 +84,8 @@ $perintah = mysqli_query(
 );
 
 if (!$perintah) {
-    die(
-        "Query Error : " .
-        mysqli_error($koneksi)
-    );
+    error_log("Query Error in notifikasi_wa_controlpanel.php: " . mysqli_error($koneksi));
+    die("Terjadi kesalahan saat memproses data.");
 }
 
 // ==============================

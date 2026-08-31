@@ -1,6 +1,5 @@
 <?php
 include "koneksi.php";
-    print_r($_POST);
     $sn_tire = $_POST['sn_tire'];
     $size = $_POST['size'];
     $area = $_POST['area'];

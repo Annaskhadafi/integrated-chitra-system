@@ -17,6 +17,7 @@ require_user_levels($koneksi, array(1, 3, 910)); // Admin, Managerial & Super Ad
                 <?php include "template_menu.php";
                     $selectmtrl = isset($_GET['material']) ? $_GET['material'] : "All";
                     $selectloc = isset($_GET['location']) ? $_GET['location'] : "All";
+                    $tahun = isset($_GET['year']) ? intval($_GET['year']) : intval(date('Y'));
                     
                     $perintah3 = mysqli_query($koneksi2,"SELECT material FROM mining_company GROUP BY material");
                     while ($data3 = mysqli_fetch_array($perintah3)) {
@@ -46,6 +47,8 @@ require_user_levels($koneksi, array(1, 3, 910)); // Admin, Managerial & Super Ad
                             $perintah2 =mysqli_query($koneksi2,"SELECT b.customer,sum(a.target) as target FROM site_master a,customer_master b,mining_company c where a.id_customer=b.id_customer_master and a.mining_company=c.id_mining and a.location='$selectloc' and c.material='$selectmtrl' and year_update= $tahun group by a.id_customer ORDER BY target DESC limit 10");
                         }
                     }
+                    $mincom = array();
+                    $target = array();
                     while ($data = mysqli_fetch_array($perintah)) {
                         $mincom[]=$data['mining_company'];
                         $target[]=$data['target'];
@@ -53,6 +56,8 @@ require_user_levels($koneksi, array(1, 3, 910)); // Admin, Managerial & Super Ad
                     $mincom = array_reverse($mincom);
                     $target = array_reverse($target);
                     
+                    $contractor = array();
+                    $targetcontractor = array();
                     while ($data2 = mysqli_fetch_array($perintah2)) {
                         $contractor[]=$data2['customer'];
                         $targetcontractor[]=$data2['target'];

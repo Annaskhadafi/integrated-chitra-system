@@ -27,7 +27,8 @@
                 $qRecPress1 = mysqli_query($sambung, "select a.id_inventory, b.recc_pressure from tire_inventory a, tire_size b where a.size = b.id_size and a.id_inventory='$indexBan1'");
                 if($qRecPress1 == FALSE)
                 {
-                    die(mysqli_error());
+                    error_log("Error in tambahdcp.php (qRecPress1): " . mysqli_error($sambung));
+                    die("Terjadi kesalahan saat memproses data.");
                 }
                 $recPress1 = mysqli_fetch_array($qRecPress1);
                 $reccPress1 = $recPress1['recc_pressure'];
@@ -66,7 +67,8 @@
                 $qRecPress2 = mysqli_query($sambung, "select a.id_inventory, b.recc_pressure from tire_inventory a, tire_size b where a.size = b.id_size and a.id_inventory='$indexBan2'");
                 if($qRecPress2 == FALSE)
                 {
-                    die(mysqli_error());
+                    error_log("Error in tambahdcp.php (qRecPress2): " . mysqli_error($sambung));
+                    die("Terjadi kesalahan saat memproses data.");
                 }
                 $recPress2 = mysqli_fetch_array($qRecPress2);
                 $reccPress2 = $recPress2['recc_pressure'];
@@ -107,7 +109,8 @@
                 $qRecPress3 = mysqli_query($sambung, "select a.id_inventory, b.recc_pressure from tire_inventory a, tire_size b where a.size = b.id_size and a.id_inventory='$indexBan3'");
                 if($qRecPress3 == FALSE)
                 {
-                    die(mysqli_error());
+                    error_log("Error in tambahdcp.php (qRecPress3): " . mysqli_error($sambung));
+                    die("Terjadi kesalahan saat memproses data.");
                 }
                 $recPress3 = mysqli_fetch_array($qRecPress3);
                 $reccPress3 = $recPress3['recc_pressure'];
