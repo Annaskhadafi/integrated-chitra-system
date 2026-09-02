@@ -1,6 +1,7 @@
 <?php
 include_once "koneksi.php";
 include_once "auth_check.php";
+include_once "csrf.php";
 require_user_levels($koneksi, array(1, 910)); // Admin & Super Admin
 ?>
 <!DOCTYPE html>
@@ -70,6 +71,8 @@ require_user_levels($koneksi, array(1, 910)); // Admin & Super Admin
                     <div class="col-md-12 col-sm-12 col-xs-12">
 
                         <form  class="form-inline" role="form" action="tambahData.php" method="post">
+                            <?= csrf_field(); ?>
+                            <input type="hidden" name="tab_id" value="<?= enforce_single_tab(); ?>">
 
                             <input class="form-control" type = "hidden" name ="item" value="fleet">  
 
