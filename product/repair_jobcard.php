@@ -3,6 +3,28 @@
 <html lang="en">
   <?php 
     include "header.php"; // call sectionhead.php as library
+
+    function repair_jobcard_pdf_filename_url($workOrder)
+    {
+        $parts = array(
+            $workOrder['wo'] ?? '',
+            $workOrder['tire_sn'] ?? '',
+            $workOrder['customer'] ?? '',
+            $workOrder['site'] ?? ''
+        );
+
+        $parts = array_map(function($value) {
+            $value = preg_replace('/\s+/', ' ', trim((string) $value));
+            return preg_replace('/[\/\\\\:*?"<>|]/', '', $value);
+        }, $parts);
+
+        $parts = array_filter($parts, function($value) {
+            return $value !== '';
+        });
+
+        $filename = implode('-', $parts);
+        return ($filename !== '' ? $filename : 'Repair Jobcard') . '.pdf';
+    }
   ?>
   <body class="nav-md repair-jobcard-print-page">
     <div class="container body">
@@ -18,23 +40,7 @@
                     $perintah = mysqli_query($koneksi3, "SELECT * FROM work_order WHERE id_wo='$idwo'");
                     $data = mysqli_fetch_array($perintah);
                     $remark=$data['remark'];
-                    $printFileParts = array(
-                        $data['wo'] ?? '',
-                        $data['tire_sn'] ?? '',
-                        $data['customer'] ?? '',
-                        $data['site'] ?? ''
-                    );
-                    $printFileParts = array_map(function($value) {
-                        $value = preg_replace('/\s+/', ' ', trim((string) $value));
-                        return preg_replace('/[\/\\\\:*?"<>|]/', '', $value);
-                    }, $printFileParts);
-                    $printFileParts = array_filter($printFileParts, function($value) {
-                        return $value !== '';
-                    });
-                    $printFileName = implode('-', $printFileParts);
-                    if ($printFileName === '') {
-                        $printFileName = 'Repair Jobcard';
-                    }
+                    $pdfUrl = 'repair_jobcard_pdf.php/' . rawurlencode(repair_jobcard_pdf_filename_url($data)) . '?id=' . urlencode($idwo);
                 ?>
             <div class="clearfix"></div>
             <div class="row">
@@ -151,6 +157,7 @@
                                             $material = array();
                                             $satuan = array();
                                             $jmlh = array();
+                                            $material_summary = array();
                                             $perintah2 = mysqli_query($koneksi3, "SELECT 
                                                                                   a.wo, 
                                                                                   a.job,
@@ -181,6 +188,18 @@
                                                     $satuan[$kunci] = $smu ?? '';
                                                 } else if ($nama) {
                                                     $material[$kunci] .= ($material[$kunci] ? ", " : "") . $nama;
+                                                }
+
+                                                if ($nama) {
+                                                    $summary_key = $nama . '|' . $smu;
+                                                    if (!isset($material_summary[$summary_key])) {
+                                                        $material_summary[$summary_key] = array(
+                                                            'material' => $nama,
+                                                            'qty' => 0,
+                                                            'uom' => $smu
+                                                        );
+                                                    }
+                                                    $material_summary[$summary_key]['qty'] += $data2['qty'];
                                                 }
                                             }
                                             
@@ -245,14 +264,14 @@
                                 <tbody>
                                     <?php 
                                     $has_material = false;
-                                    foreach ($material as $key => $value): 
-                                        if (trim($value) !== ''): 
+                                    foreach ($material_summary as $value): 
+                                        if (trim($value['material']) !== ''): 
                                             $has_material = true;
                                     ?>
                                             <tr>
-                                                <td><?php echo htmlspecialchars($value); ?></td>
-                                                <td><?php echo htmlspecialchars($jmlh[$key] ?? 0); ?></td>
-                                                <td><?php echo htmlspecialchars($satuan[$key] ?? "-"); ?></td>
+                                                <td><?php echo htmlspecialchars($value['material']); ?></td>
+                                                <td><?php echo htmlspecialchars($value['qty']); ?></td>
+                                                <td><?php echo htmlspecialchars($value['uom'] ?? "-"); ?></td>
                                             </tr>
                                     <?php 
                                         endif; 
@@ -272,7 +291,14 @@
                       <!-- Tombol Print di Web Web Screen -->
                       <div class="row no-print" style="margin-top: 20px;">
                         <div class="col-xs-12">
-                          <button class="btn btn-default" onclick="printJobcard();"><i class="fa fa-print"></i> Print Jobcard</button>
+                          <a
+                            class="btn btn-default"
+                            href="<?php echo htmlspecialchars($pdfUrl, ENT_QUOTES, 'UTF-8'); ?>"
+                            target="_blank"
+                            rel="noopener"
+                          >
+                            <i class="fa fa-print"></i> Print Jobcard
+                          </a>
                         </div>
                       </div>
                     </section>
@@ -290,29 +316,5 @@
     <script src="../vendors/jquery/dist/jquery.min.js"></script>
     <script src="../vendors/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../build/js/custom.min.js"></script>
-    <script>
-      var repairJobcardPrintTitle = <?php echo json_encode($printFileName); ?>;
-
-      function printJobcard() {
-        var originalTitle = document.title;
-        var titleRestored = false;
-
-        function restoreTitle() {
-          if (!titleRestored) {
-            document.title = originalTitle;
-            titleRestored = true;
-          }
-        }
-
-        document.title = repairJobcardPrintTitle;
-
-        if ('onafterprint' in window) {
-          window.addEventListener('afterprint', restoreTitle, { once: true });
-        }
-
-        window.print();
-        setTimeout(restoreTitle, 1000);
-      }
-    </script>
   </body>
 </html>

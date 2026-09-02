@@ -1,0 +1,9 @@
+{
+    "name": "chitra-system/product",
+    "description": "Product module dependencies for Integrated Chitra System.",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "dompdf/dompdf": "^3.1"
+    }
+}
