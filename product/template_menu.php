@@ -52,6 +52,9 @@ if ($username != "") {
                     </div>
                     <span>Integrated Chitra Sistem</span>
                 </a>
+                <a id="menu_toggle_close" class="repair-sidebar-close-btn hidden-md hidden-lg" title="Close Menu">
+                    <i class="fa fa-times"></i>
+                </a>
             </div>
             <div class="clearfix"></div>
         <?php } else { ?>

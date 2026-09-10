@@ -830,6 +830,12 @@ require_access($koneksi, array(), array(3));
             $(this).parent('li').addClass('current-page');
           }
         });
+
+        // Close sidebar when close button clicked on mobile
+        $('#menu_toggle_close').on('click', function(e) {
+          e.preventDefault();
+          $('body').removeClass('nav-md').addClass('nav-sm');
+        });
       });
     </script>
   </body>
