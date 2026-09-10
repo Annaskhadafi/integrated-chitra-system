@@ -118,6 +118,24 @@
     display: flex !important;
     flex-direction: column !important;
     overflow: hidden !important;
+    transition: transform 0.3s ease, width 0.3s ease;
+}
+
+@media (max-width: 991px) {
+    body.nav-md .container.body .main_container > .left_col.is-repair-section {
+        display: flex !important;
+        width: 230px !important;
+        transform: translateX(0) !important;
+        z-index: 9999 !important;
+    }
+    
+    body:not(.nav-md) .container.body .main_container > .left_col.is-repair-section,
+    body.nav-sm .container.body .main_container > .left_col.is-repair-section {
+        display: none !important;
+        width: 0 !important;
+        transform: translateX(-100%) !important;
+        pointer-events: none !important;
+    }
 }
 
 .is-repair-section .scroll-view {
