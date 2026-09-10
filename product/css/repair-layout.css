@@ -228,8 +228,8 @@ body.nav-sm .container.body .main_container > .left_col.is-repair-section ~ .rig
 }
 
 body.nav-sm .container.body .main_container > .left_col.is-repair-section ~ .right_col {
-    padding-left: 30px !important;
-    padding-right: 30px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
 }
 
 .is-repair-section .menu_fixed {

@@ -243,9 +243,12 @@
 .work-order-list-page .wo-table-scroll {
     border-bottom: 1px solid #eef2f7 !important;
     overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
     scrollbar-color: #8b8b8b #f1f5f9;
     scrollbar-width: thin;
     width: 100%;
+    max-width: 100%;
+    display: block;
 }
 
 .work-order-list-page #datatable-buttons tbody tr:first-child td {
@@ -811,6 +814,16 @@
 }
 
 @media (max-width: 991px) {
+    .work-order-list-page .wo-table-wrapper {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        width: 100%;
+    }
+
+    .work-order-list-page #datatable-buttons {
+        min-width: 1800px !important;
+    }
+
     .work-order-list-page .wo-list-header {
         align-items: flex-start;
         flex-direction: column;
