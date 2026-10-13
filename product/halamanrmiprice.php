@@ -8,6 +8,12 @@ if (!$isEmbed && !isset($_SESSION['username'])) {
     $isEmbed = true; // Otomatis aktifkan embed mode jika diakses tanpa login
 }
 
+if ($isEmbed) {
+    // Izinkan embedding di iframe untuk domain CTS / parent website
+    header_remove("X-Frame-Options");
+    header("Content-Security-Policy: frame-ancestors 'self' https://cts-chitraparatama.co.id http://cts-chitraparatama.co.id;");
+}
+
 // --- LOGIKA FILTER TAHUN ---
 // 1. Ambil daftar tahun unik dari database untuk dropdown
 $queryYears = "SELECT DISTINCT YEAR(price_date) as tahun FROM material_price ORDER BY tahun DESC";
