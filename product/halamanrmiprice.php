@@ -9,9 +9,9 @@ if (!$isEmbed && !isset($_SESSION['username'])) {
 }
 
 if ($isEmbed) {
-    // Izinkan embedding di iframe untuk domain CTS / parent website
+    // Izinkan embedding di iframe untuk domain resmi Chitra Paratama dan CTS (testing)
     header_remove("X-Frame-Options");
-    header("Content-Security-Policy: frame-ancestors 'self' https://cts-chitraparatama.co.id http://cts-chitraparatama.co.id;");
+    header("Content-Security-Policy: frame-ancestors 'self' https://chitraparatama.com https://*.chitraparatama.com https://cts-chitraparatama.co.id http://cts-chitraparatama.co.id;");
 }
 
 // --- LOGIKA FILTER TAHUN ---
