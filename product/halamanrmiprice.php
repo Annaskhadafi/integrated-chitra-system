@@ -2,6 +2,12 @@
 session_start();
 include "koneksi.php";
 
+// Deteksi mode embed (via ?embed=1 atau jika user belum login)
+$isEmbed = isset($_GET['embed']) && $_GET['embed'] == '1';
+if (!$isEmbed && !isset($_SESSION['username'])) {
+    $isEmbed = true; // Otomatis aktifkan embed mode jika diakses tanpa login
+}
+
 // --- LOGIKA FILTER TAHUN ---
 // 1. Ambil daftar tahun unik dari database untuk dropdown
 $queryYears = "SELECT DISTINCT YEAR(price_date) as tahun FROM material_price ORDER BY tahun DESC";
@@ -161,18 +167,40 @@ $datasetsMaterial = buildDataset($temp_data_material, $labels, $material_info, $
         border-radius: 8px;
         border: 1px solid #ddd;
     }
+
+    <?php if ($isEmbed): ?>
+    /* CSS khusus Embed / Tanpa Sidebar */
+    body {
+        background: #f7f7f7 !important;
+    }
+    .right_col {
+        margin-left: 0 !important;
+        padding: 15px !important;
+        background: transparent !important;
+    }
+    .main_container {
+        background: transparent !important;
+    }
+    <?php endif; ?>
 </style>
 
-<body class="nav-md">
+<body class="<?= $isEmbed ? 'nav-sm' : 'nav-md' ?>">
     <div class="container body">
         <div class="main_container">
-            <?php include "template_menu.php"; ?>
+            <?php 
+            if (!$isEmbed) {
+                include "template_menu.php";
+            }
+            ?>
 
             <div class="right_col" role="main">
 
                 <div class="x_panel">
                     <div class="x_content">
                         <form method="GET" action="" class="form-inline">
+                            <?php if (isset($_GET['embed']) && $_GET['embed'] == '1'): ?>
+                                <input type="hidden" name="embed" value="1">
+                            <?php endif; ?>
                             <div class="form-group">
                                 <label for="filter_tahun" style="margin-right: 10px;">Filter Berdasarkan Tahun: </label>
                                 <select name="filter_tahun" id="filter_tahun" class="form-control" onchange="this.form.submit()">
