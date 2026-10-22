@@ -5,3 +5,6 @@ node_modules
 koneksi.php
 product/koneksi.php
 .aider*
+.env
+.env.local
+.env.*.local

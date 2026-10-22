@@ -6,10 +6,16 @@ services:
     ports:
       - "8080:80"
     environment:
-      - DB_HOST=db
-      - DB_USER=root
-      - DB_PASS=password
-      - DB_NAME=chitraparatama_ics
+      - DB_HOST=${DB_HOST:-db}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_USER=${DB_USER:-root}
+      - DB_PASS=${DB_PASS:-password}
+      - DB_NAME=${DB_NAME:-chitraparatama_ics}
+      - DB_NAME2=${DB_NAME2:-chitraparatama_fleetlist}
+      - DB_NAME3=${DB_NAME3:-chitraparatama_repair_job_card}
+      - DB_NAME5=${DB_NAME5:-chitraparatama_warranty}
+      - DB_NAME6=${DB_NAME6:-chitraparatama_vhs_stock}
+      - DB_NAME8=${DB_NAME8:-chitraparatama_competitor}
     volumes:
       - .:/var/www/html
     depends_on:
@@ -19,8 +25,8 @@ services:
     image: mysql:8.0
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: chitraparatama_ics
+      MYSQL_ROOT_PASSWORD: ${DB_PASS:-password}
+      MYSQL_DATABASE: ${DB_NAME:-chitraparatama_ics}
     ports:
       - "3306:3306"
     volumes:

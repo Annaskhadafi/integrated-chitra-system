@@ -9,14 +9,14 @@
  <body>   
  <h1>Insert Data</h1>  
  <?php 
- $host = "localhost";  
- $user = "root";  
- $pass = "";  
- $dbnm = "test";  
+ require_once __DIR__ . "/koneksi.php";  
 
- $conn = mysqli_connect ($host, $user, $pass, $dbnm);  
+
+
+
+ $conn = $koneksi;  
  if ($conn) {  
-  $buka = mysqli_select_db ($dbnm);  
+  $buka = true;  
   if (!$buka) {  
   die ("Database tidak dapat dibuka");  
   }  
